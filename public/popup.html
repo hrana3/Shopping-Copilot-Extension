@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browseable.ai</title>
+  <style>
+    body {
+      width: 350px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .header {
+      padding: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: white;
+      border-radius: 12px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .feature:last-child {
+      border-bottom: none;
+    }
+    
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    
+    .feature-text {
+      flex: 1;
+    }
+    
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .feature-desc {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    
+    .status.active {
+      background: rgba(16, 185, 129, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🛒</div>
+    <h1 style="margin: 0; font-size: 18px; font-weight: 700;">Browseable.ai</h1>
+    <p style="margin: 8px 0 0; font-size: 12px; opacity: 0.9;">AI Shopping Co-Pilot</p>
+  </div>
+  
+  <div class="content">
+    <div class="feature">
+      <div class="feature-icon">💬</div>
+      <div class="feature-text">
+        <div class="feature-title">Smart Chat Assistant</div>
+        <div class="feature-desc">Get personalized product recommendations</div>
+      </div>
+    </div>
+    
+    <div class="feature">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-text">
+        <div class="feature-title">Product Discovery</div>
+        <div class="feature-desc">Find items across any e-commerce site</div>
+      </div>
+    </div>
+    
+    <div class="feature">
+      <div class="feature-icon">❤️</div>
+      <div class="feature-text">
+        <div class="feature-title">Wishlist & Alerts</div>
+        <div class="feature-desc">Save favorites and track price drops</div>
+      </div>
+    </div>
+    
+    <div class="feature">
+      <div class="feature-icon">✨</div>
+      <div class="feature-text">
+        <div class="feature-title">Style Curation</div>
+        <div class="feature-desc">AI-powered fashion recommendations</div>
+      </div>
+    </div>
+    
+    <div class="status active">
+      ✅ Active on supported e-commerce sites
+    </div>
+  </div>
+  
+  <script>
+    // Simple popup functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Browseable.ai popup loaded');
+      
+      // Check if we're on a supported site
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        const tab = tabs[0];
+        if (tab && tab.url) {
+          const url = new URL(tab.url);
+          const supportedSites = ['shopify', 'amazon', 'ebay', 'etsy', 'target', 'walmart'];
+          const isSupported = supportedSites.some(site => url.hostname.includes(site)) ||
+                             url.pathname.includes('/product') ||
+                             url.pathname.includes('/shop');
+          
+          const statusEl = document.querySelector('.status');
+          if (isSupported) {
+            statusEl.textContent = '✅ Active on this site';
+            statusEl.classList.add('active');
+          } else {
+            statusEl.textContent = '⚠️ Navigate to an e-commerce site to use';
+            statusEl.classList.remove('active');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
