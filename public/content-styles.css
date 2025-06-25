@@ -6,6 +6,7 @@
   margin: 0 !important;
   padding: 0 !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  line-height: normal !important;
 }
 
 /* Ensure the widget doesn't interfere with page styles */
@@ -49,11 +50,18 @@
   pointer-events: auto !important;
   border: none !important;
   color: white !important;
+  outline: none !important;
 }
 
 .browseable-chat-bubble:hover {
   transform: scale(1.1) !important;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.browseable-chat-bubble svg {
+  width: 24px !important;
+  height: 24px !important;
+  color: white !important;
 }
 
 /* Chat drawer styles */
@@ -74,6 +82,27 @@
   overflow: hidden !important;
 }
 
+.browseable-chat-drawer-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 24px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  background: linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%) !important;
+}
+
+.browseable-chat-drawer-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+}
+
+.browseable-chat-drawer-footer {
+  border-top: 1px solid #f1f5f9 !important;
+  padding: 24px !important;
+  background: #fafbfc !important;
+}
+
 /* Backdrop */
 .browseable-chat-backdrop {
   position: fixed !important;
@@ -85,6 +114,92 @@
   backdrop-filter: blur(4px) !important;
   z-index: 2147483645 !important;
   pointer-events: auto !important;
+}
+
+/* Message styles */
+.browseable-message {
+  margin-bottom: 16px !important;
+  max-width: 85% !important;
+}
+
+.browseable-message-user {
+  margin-left: auto !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  color: white !important;
+  border-radius: 18px 18px 6px 18px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+.browseable-message-assistant {
+  margin-right: auto !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-radius: 18px 18px 18px 6px !important;
+  padding: 16px 20px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Product card styles */
+.browseable-product-card {
+  background: white !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important;
+  margin-bottom: 16px !important;
+}
+
+.browseable-product-image {
+  width: 100% !important;
+  height: 160px !important;
+  object-fit: cover !important;
+}
+
+.browseable-product-content {
+  padding: 16px 20px !important;
+}
+
+.browseable-product-title {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  font-size: 15px !important;
+  margin-bottom: 8px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.browseable-product-price {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+/* Input styles */
+.browseable-input {
+  width: 100% !important;
+  padding: 14px 18px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  font-size: 14px !important;
+  outline: none !important;
+  background: white !important;
+}
+
+.browseable-button {
+  padding: 14px 20px !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 16px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 /* Responsive design */
@@ -103,6 +218,11 @@
     right: 16px !important;
     width: 48px !important;
     height: 48px !important;
+  }
+  
+  .browseable-chat-bubble svg {
+    width: 20px !important;
+    height: 20px !important;
   }
 }
 

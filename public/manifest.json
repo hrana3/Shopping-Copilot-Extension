@@ -18,18 +18,12 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.shopify.com/*",
-        "https://*/products/*",
-        "https://*/product/*",
-        "https://*/shop/*",
-        "https://*.amazon.com/*",
-        "https://*.ebay.com/*",
-        "https://*.etsy.com/*",
-        "https://*.target.com/*",
-        "https://*.walmart.com/*"
+        "https://*/*",
+        "http://*/*"
       ],
       "js": ["content-script.js"],
-      "css": ["content-styles.css"]
+      "css": ["content-styles.css"],
+      "run_at": "document_end"
     }
   ],
   "action": {
@@ -44,7 +38,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["chat-widget.js", "assets/*"],
+      "resources": ["icons/*", "content-styles.css"],
       "matches": ["<all_urls>"]
     }
   ]

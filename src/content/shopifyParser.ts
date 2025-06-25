@@ -211,12 +211,12 @@ function extractFromJsonLd(): ShopifyProduct[] {
           if (item['@type'] === 'Product') {
             console.log('✅ Found Product in JSON-LD');
             const product: ShopifyProduct = {
-              id: item.productID || item.sku,
+              id: item.productID || item.sku || `jsonld-${Date.now()}-${itemIndex}`,
               title: item.name,
               description: item.description,
               vendor: item.brand?.name,
               url: item.url,
-              featured_image: item.image?.[0] || item.image,
+              featured_image: Array.isArray(item.image) ? item.image[0] : item.image,
               images: Array.isArray(item.image) ? item.image : item.image ? [item.image] : undefined
             };
 
@@ -253,8 +253,9 @@ function extractFromJsonLd(): ShopifyProduct[] {
  */
 function extractPrice(text: string): number | undefined {
   try {
-    const cleaned = text.replace(/[^\d.,]/g, '');
-    const price = parseFloat(cleaned.replace(',', ''));
+    // Remove currency symbols and non-numeric characters except decimal points
+    const cleaned = text.replace(/[^\d.,]/g, '').replace(',', '.');
+    const price = parseFloat(cleaned);
     return isNaN(price) ? undefined : price;
   } catch (error) {
     return undefined;
@@ -279,7 +280,9 @@ function extractFromDom(): ShopifyProduct[] {
       '.product-grid-item',
       '.product-list-item',
       '[data-product]',
-      '[data-product-handle]'
+      '[data-product-handle]',
+      '[itemtype="http://schema.org/Product"]',
+      '[itemtype="https://schema.org/Product"]'
     ];
     
     let productElements: NodeListOf<Element> | Element[] = document.querySelectorAll(selectors.join(','));
@@ -295,7 +298,7 @@ function extractFromDom(): ShopifyProduct[] {
       
       allElements.forEach(element => {
         // Check for product-related attributes
-        const attrs = Array.from(element.attributes);
+        const attrs = Array.from(element.attributes || []);
         const hasProductAttr = attrs.some(attr => 
           attr.name.includes('product') || 
           attr.value.includes('product')
@@ -310,8 +313,11 @@ function extractFromDom(): ShopifyProduct[] {
       console.log('🔍 Found product elements with alternative detection:', productElements.length);
     }
 
-    productElements.forEach((element, index) => {
+    // Process each product element
+    Array.from(productElements).forEach((element, index) => {
       try {
+        if (index >= 20) return; // Limit to 20 products to avoid performance issues
+        
         console.log(`🔍 Processing DOM element ${index + 1}`);
         
         // Try to get product ID
@@ -412,6 +418,12 @@ function extractFromDom(): ShopifyProduct[] {
           }
         }
 
+        // If still no price, set a default
+        if (price === undefined) {
+          price = 0;
+          console.log(`⚠️ No price found, using default:`, price);
+        }
+
         // Extract URL
         let url = '';
         const linkEl = element.querySelector('a[href]') as HTMLAnchorElement;
@@ -426,15 +438,47 @@ function extractFromDom(): ShopifyProduct[] {
           url = `/products/${handle}`;
           console.log(`✅ Constructed URL:`, url);
         }
+        
+        // Make sure URL is absolute
+        if (url && url.startsWith('/')) {
+          url = `${window.location.origin}${url}`;
+          console.log(`✅ Made URL absolute:`, url);
+        }
+
+        // Extract description
+        let description = '';
+        const descSelectors = [
+          '.product-description',
+          '.description',
+          '[itemprop="description"]'
+        ];
+        
+        for (const selector of descSelectors) {
+          const descEl = element.querySelector(selector);
+          if (descEl?.textContent) {
+            description = descEl.textContent.trim();
+            if (description) {
+              console.log(`✅ Found description using selector "${selector}"`);
+              break;
+            }
+          }
+        }
+        
+        // Default description if none found
+        if (!description) {
+          description = `${title} - Product found on ${window.location.hostname}`;
+          console.log(`⚠️ No description found, using default`);
+        }
 
         const product: ShopifyProduct = {
           id: productId,
           title,
+          description,
           featured_image: image,
           price,
           url,
           available: true, // Assume available if found in DOM
-          description: element.querySelector('.product-description')?.textContent?.trim() || ''
+          vendor: element.querySelector('.vendor')?.textContent?.trim() || undefined
         };
 
         products.push(product);
@@ -614,7 +658,7 @@ export function initShopifyParser(): void {
     
     // Check if this is a Shopify site
     if (!detectShopify()) {
-      console.log('❌ Not a Shopify site, skipping parser initialization');
+      console.log('❌ Not a Shopify site, trying generic product extraction');
       
       // Try to extract products from DOM anyway
       const domProducts = extractFromDom();
@@ -644,7 +688,23 @@ export function initShopifyParser(): void {
 
     // Check if this is a relevant Shopify page
     if (!matchesShopifyPage() && !window.location.pathname.includes('/product')) {
-      console.log('❌ Not a Shopify product/collection page, skipping parser initialization');
+      console.log('❌ Not a Shopify product/collection page, trying generic extraction');
+      
+      // Try to extract products anyway
+      const products = extractProducts();
+      
+      if (products.length > 0) {
+        console.log(`✅ Successfully extracted ${products.length} products`);
+        
+        // Store products for the chat widget to access
+        (window as any).__browseableAiProducts = products;
+        
+        // Dispatch custom event to notify chat widget
+        window.dispatchEvent(new CustomEvent('browseableAiProductsExtracted', {
+          detail: { products }
+        }));
+      }
+      
       return;
     }
 

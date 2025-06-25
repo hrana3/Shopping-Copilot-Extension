@@ -18,35 +18,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     <button
       onClick={onClick}
       className="browseable-chat-bubble"
-      style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        width: '56px',
-        height: '56px',
-        background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-        borderRadius: '50%',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 2147483647,
-        pointerEvents: 'auto',
-        border: 'none',
-        color: 'white'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.1)';
-        e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-      }}
     >
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'relative' }}>
         <MessageCircle size={24} color="white" />
         <Sparkles 
           size={12} 

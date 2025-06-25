@@ -29,30 +29,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     window.open(product.url, '_blank');
   };
 
+  // Ensure we have a valid image URL
+  const imageUrl = product.image || 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=800';
+
   return (
-    <div style={{
-      background: 'white',
-      borderRadius: '16px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-      overflow: 'hidden',
-      border: '1px solid #e2e8f0',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      position: 'relative'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)';
-      e.currentTarget.style.transform = 'translateY(-2px)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
-      e.currentTarget.style.transform = 'translateY(0)';
-    }}
-    onClick={handleViewProduct}
+    <div 
+      className="browseable-product-card"
+      style={{
+        background: 'white',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        overflow: 'hidden',
+        border: '1px solid #e2e8f0',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        position: 'relative'
+      }}
+      onClick={handleViewProduct}
     >
       <div style={{ position: 'relative', overflow: 'hidden' }}>
         <img
-          src={product.image}
+          src={imageUrl}
           alt={product.title}
           style={{
             width: '100%',
@@ -63,12 +60,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           onError={(e) => {
             // Fallback image if the product image fails to load
             e.currentTarget.src = 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=800';
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
           }}
         />
         {product.discount_percentage && (
@@ -89,14 +80,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <div style={{
           position: 'absolute',
           top: '12px',
-          right: '12px',
-          opacity: 0,
-          transition: 'opacity 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '1';
-        }}
-        >
+          right: '12px'
+        }}>
           <button
             onClick={handleAddToWishlist}
             style={{
@@ -111,14 +96,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'white';
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
-              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             <Heart size={16} color="#64748b" />
@@ -228,7 +205,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               fontWeight: '800',
               color: '#0f172a'
             }}>
-              ${product.price.toFixed(2)}
+              ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
             </span>
             {product.originalPrice && (
               <span style={{
@@ -236,7 +213,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 color: '#94a3b8',
                 textDecoration: 'line-through'
               }}>
-                ${product.originalPrice.toFixed(2)}
+                ${typeof product.originalPrice === 'number' ? product.originalPrice.toFixed(2) : product.originalPrice}
               </span>
             )}
           </div>
@@ -255,14 +232,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#0f172a';
-                e.currentTarget.style.background = '#f1f5f9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#64748b';
-                e.currentTarget.style.background = 'transparent';
               }}
               title="View Product"
             >
@@ -284,18 +253,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 fontWeight: '600',
                 cursor: product.availability === 'out_of_stock' ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (product.availability !== 'out_of_stock') {
-                  e.currentTarget.style.background = '#7c3aed';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (product.availability !== 'out_of_stock') {
-                  e.currentTarget.style.background = '#8b5cf6';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
               }}
             >
               <ShoppingCart size={14} />

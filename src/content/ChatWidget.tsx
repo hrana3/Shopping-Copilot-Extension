@@ -140,7 +140,7 @@ export const ChatWidget: React.FC = () => {
             
             // Default description if none found
             if (!description) {
-              description = 'Product found on this page';
+              description = `${title} - Product found on ${window.location.hostname}`;
             }
             
             // Find URL
@@ -156,12 +156,12 @@ export const ChatWidget: React.FC = () => {
             }
             
             // Only add if we have at least title and price
-            if (title && price) {
+            if (title) {
               extractedProducts.push({
-                id: productId,
+                id: String(productId),
                 title,
                 description,
-                price,
+                price: price || 0,
                 currency: 'USD',
                 image,
                 category: 'General',
