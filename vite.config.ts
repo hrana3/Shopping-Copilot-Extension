@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
             chunkFileNames: '[name].js',
             assetFileNames: '[name].[ext]',
             format: 'iife',
+            inlineDynamicImports: false,
             globals: {
               'react': 'React',
               'react-dom': 'ReactDOM'
