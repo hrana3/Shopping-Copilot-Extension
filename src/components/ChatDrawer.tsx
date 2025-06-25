@@ -91,16 +91,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           top: '16px',
           right: '16px',
           bottom: '16px',
-          width: '400px',
+          width: '420px',
           maxWidth: 'calc(100vw - 32px)',
           background: 'white',
-          borderRadius: '16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          borderRadius: '20px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           zIndex: 2147483646,
           pointerEvents: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -109,59 +110,64 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '20px',
-          borderBottom: '1px solid #f3f4f6',
+          padding: '24px 24px 20px 24px',
+          borderBottom: '1px solid #f1f5f9',
           background: 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
+              width: '44px',
+              height: '44px',
               background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              borderRadius: '12px',
+              borderRadius: '14px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
             }}>
-              <Sparkles size={20} color="white" />
+              <Sparkles size={22} color="white" />
             </div>
             <div>
               <h2 style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 fontWeight: '700',
-                color: '#111827',
+                color: '#0f172a',
                 margin: 0,
-                lineHeight: '1.2'
+                lineHeight: '1.2',
+                letterSpacing: '-0.025em'
               }}>Browseable.ai</h2>
               <p style={{
-                fontSize: '12px',
-                color: '#6b7280',
+                fontSize: '13px',
+                color: '#64748b',
                 margin: 0,
-                lineHeight: '1.2'
+                lineHeight: '1.2',
+                fontWeight: '500'
               }}>Your AI Shopping Co-Pilot</p>
             </div>
           </div>
           <button
             onClick={onClose}
             style={{
-              padding: '8px',
+              padding: '10px',
               background: 'transparent',
               border: 'none',
               borderRadius: '12px',
               cursor: 'pointer',
-              transition: 'background-color 0.2s',
+              transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f3f4f6';
+              e.currentTarget.style.backgroundColor = '#f1f5f9';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <X size={16} color="#6b7280" />
+            <X size={18} color="#64748b" />
           </button>
         </div>
 
@@ -169,49 +175,51 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '16px',
+          padding: '20px 24px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px'
+          gap: '16px'
         }}>
           {messages.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <div style={{
-                width: '48px',
-                height: '48px',
+                width: '56px',
+                height: '56px',
                 background: 'linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%)',
-                borderRadius: '16px',
+                borderRadius: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 12px'
+                margin: '0 auto 20px'
               }}>
-                <ShoppingBag size={24} color="#8b5cf6" />
+                <ShoppingBag size={28} color="#8b5cf6" />
               </div>
               <h3 style={{
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#111827',
-                margin: '0 0 8px',
-                lineHeight: '1.3'
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#0f172a',
+                margin: '0 0 12px',
+                lineHeight: '1.3',
+                letterSpacing: '-0.025em'
               }}>
                 Welcome to your AI Shopping Assistant!
               </h3>
               <p style={{
-                fontSize: '14px',
-                color: '#6b7280',
-                margin: '0 0 16px',
-                lineHeight: '1.4'
+                fontSize: '15px',
+                color: '#64748b',
+                margin: '0 0 24px',
+                lineHeight: '1.5',
+                fontWeight: '400'
               }}>
                 I'll help you find the perfect products based on your style and preferences.
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <p style={{
-                  fontSize: '12px',
-                  fontWeight: '500',
+                  fontSize: '13px',
+                  fontWeight: '600',
                   color: '#374151',
-                  margin: '0 0 8px'
+                  margin: '0 0 12px'
                 }}>Try asking me:</p>
                 {suggestedQueries.map((query, index) => (
                   <button
@@ -220,21 +228,26 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     style={{
                       width: '100%',
                       textAlign: 'left',
-                      padding: '10px',
-                      background: '#f9fafb',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '12px',
+                      padding: '14px 16px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '14px',
+                      fontSize: '13px',
                       color: '#374151',
                       cursor: 'pointer',
-                      transition: 'background-color 0.2s',
-                      lineHeight: '1.3'
+                      transition: 'all 0.2s ease',
+                      lineHeight: '1.4',
+                      fontWeight: '500'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                      e.currentTarget.style.backgroundColor = '#f1f5f9';
+                      e.currentTarget.style.borderColor = '#cbd5e1';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.backgroundColor = '#f8fafc';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     "{query}"
@@ -251,17 +264,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 }}>
                   <div style={{
                     maxWidth: '85%',
-                    padding: '12px',
-                    borderRadius: '16px',
-                    background: message.type === 'user' ? '#8b5cf6' : '#f3f4f6',
-                    color: message.type === 'user' ? 'white' : '#111827',
-                    borderBottomRightRadius: message.type === 'user' ? '4px' : '16px',
-                    borderBottomLeftRadius: message.type === 'user' ? '16px' : '4px'
+                    padding: '14px 18px',
+                    borderRadius: '18px',
+                    background: message.type === 'user' 
+                      ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' 
+                      : '#f8fafc',
+                    color: message.type === 'user' ? 'white' : '#0f172a',
+                    borderBottomRightRadius: message.type === 'user' ? '6px' : '18px',
+                    borderBottomLeftRadius: message.type === 'user' ? '18px' : '6px',
+                    boxShadow: message.type === 'user' 
+                      ? '0 4px 12px rgba(139, 92, 246, 0.3)' 
+                      : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    border: message.type === 'user' ? 'none' : '1px solid #e2e8f0'
                   }}>
                     <p style={{
                       fontSize: '14px',
-                      lineHeight: '1.4',
-                      margin: 0
+                      lineHeight: '1.5',
+                      margin: 0,
+                      fontWeight: '500'
                     }}>{message.content}</p>
                   </div>
                 </div>
@@ -269,24 +289,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               
               {/* Products Grid */}
               {products.length > 0 && (
-                <div style={{ marginTop: '16px' }}>
+                <div style={{ marginTop: '20px' }}>
                   <h3 style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    margin: '0 0 12px'
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    color: '#0f172a',
+                    margin: '0 0 16px',
+                    letterSpacing: '-0.025em'
                   }}>
                     Recommended Products
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {products.slice(0, 4).map((product) => (
-                      <div key={product.id} style={{ transform: 'scale(0.95)' }}>
-                        <ProductCard
-                          product={product}
-                          onAddToCart={handleAddToCart}
-                          onAddToWishlist={handleAddToWishlist}
-                        />
-                      </div>
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                        onAddToWishlist={handleAddToWishlist}
+                      />
                     ))}
                   </div>
                 </div>
@@ -297,16 +317,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           {isLoading && (
             <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
               <div style={{
-                background: '#f3f4f6',
-                borderRadius: '16px',
-                borderBottomLeftRadius: '4px',
-                padding: '12px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '18px',
+                borderBottomLeftRadius: '6px',
+                padding: '14px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '10px'
               }}>
-                <Loader2 size={12} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
-                <span style={{ fontSize: '12px', color: '#6b7280' }}>AI is thinking...</span>
+                <Loader2 size={14} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>AI is thinking...</span>
               </div>
             </div>
           )}
@@ -316,10 +337,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
         {/* Input Area */}
         <div style={{
-          borderTop: '1px solid #f3f4f6',
-          padding: '16px'
+          borderTop: '1px solid #f1f5f9',
+          padding: '20px 24px 24px 24px',
+          background: '#fafbfc'
         }}>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px' }}>
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '12px' }}>
             <input
               ref={inputRef}
               type="text"
@@ -328,19 +350,21 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               placeholder="Ask me about products, styles, or recommendations..."
               style={{
                 flex: 1,
-                padding: '10px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '12px',
+                padding: '14px 18px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '16px',
                 fontSize: '14px',
                 outline: 'none',
-                transition: 'border-color 0.2s, box-shadow 0.2s'
+                transition: 'all 0.2s ease',
+                background: 'white',
+                fontWeight: '500'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = '#8b5cf6';
                 e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.borderColor = '#e2e8f0';
                 e.currentTarget.style.boxShadow = 'none';
               }}
               disabled={isLoading}
@@ -349,16 +373,35 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
               style={{
-                padding: '10px 16px',
-                background: inputMessage.trim() && !isLoading ? '#8b5cf6' : '#d1d5db',
+                padding: '14px 20px',
+                background: inputMessage.trim() && !isLoading 
+                  ? 'linear-gradient(135deg, #8b5cf6 0%,  #7c3aed 100%)' 
+                  : '#cbd5e1',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                transition: 'background-color 0.2s',
+                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: inputMessage.trim() && !isLoading 
+                  ? '0 4px 12px rgba(139, 92, 246, 0.3)' 
+                  : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (inputMessage.trim() && !isLoading) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (inputMessage.trim() && !isLoading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+                }
               }}
             >
               {isLoading ? (
@@ -366,6 +409,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               ) : (
                 <Send size={16} />
               )}
+              Send
             </button>
           </form>
         </div>

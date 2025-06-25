@@ -23,7 +23,7 @@ const createStyles = () => {
       height: 100% !important;
       pointer-events: none !important;
       z-index: 2147483647 !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
       font-size: 14px !important;
       line-height: 1.5 !important;
       color: #374151 !important;
@@ -35,6 +35,7 @@ const createStyles = () => {
       box-sizing: border-box !important;
       margin: 0 !important;
       padding: 0 !important;
+      font-family: inherit !important;
     }
     
     #browseable-ai-widget button,
@@ -82,11 +83,11 @@ const createStyles = () => {
       top: 16px !important;
       right: 16px !important;
       bottom: 16px !important;
-      width: 400px !important;
+      width: 420px !important;
       max-width: calc(100vw - 32px) !important;
       background: white !important;
-      border-radius: 16px !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
       z-index: 2147483646 !important;
       pointer-events: auto !important;
       display: flex !important;
@@ -165,11 +166,11 @@ const createStyles = () => {
     /* Ensure no conflicts with page styles */
     #browseable-ai-widget .reset {
       all: initial !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
     }
   `;
   return style;
-};
+}
 
 function initializeChatWidget() {
   console.log('🔍 Initializing chat widget...');

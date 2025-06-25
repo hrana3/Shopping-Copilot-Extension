@@ -37,18 +37,79 @@ export class AIClient {
       return "These sophisticated pieces are perfect for professional settings while maintaining your personal style.";
     }
     
+    if (products.length === 0) {
+      return "I couldn't find any products matching your request. Could you try a different search term or category?";
+    }
+    
+    if (products.length === 1) {
+      return `I found this ${products[0].category.toLowerCase()} that matches your request! It's a ${products[0].title} from ${products[0].brand || 'a great brand'}.`;
+    }
+    
     return responses[Math.floor(Math.random() * responses.length)];
   }
   
   async searchProducts(query: string, allProducts: Product[]): Promise<Product[]> {
-    // Simple keyword-based search for MVP
-    const searchTerms = query.toLowerCase().split(' ');
+    console.log('🔍 Searching products with query:', query);
+    console.log('🔍 Available products:', allProducts.length);
     
-    return allProducts.filter(product => {
+    if (allProducts.length === 0) {
+      console.log('⚠️ No products available to search');
+      return [];
+    }
+    
+    // More sophisticated keyword-based search
+    const searchTerms = query.toLowerCase().split(' ')
+      .filter(term => term.length > 2) // Filter out short words
+      .map(term => term.replace(/[^\w\s]/gi, '')); // Remove special characters
+    
+    console.log('🔍 Search terms:', searchTerms);
+    
+    if (searchTerms.length === 0) {
+      console.log('⚠️ No valid search terms found, returning all products');
+      return allProducts;
+    }
+    
+    // Score each product based on matches
+    const scoredProducts = allProducts.map(product => {
       const searchText = `${product.title} ${product.description} ${product.category} ${product.tags.join(' ')} ${product.brand || ''}`.toLowerCase();
       
-      return searchTerms.some(term => searchText.includes(term));
+      let score = 0;
+      
+      // Check for exact matches in title (highest weight)
+      searchTerms.forEach(term => {
+        if (product.title.toLowerCase().includes(term)) {
+          score += 10;
+        }
+        
+        // Check for matches in other fields
+        if (searchText.includes(term)) {
+          score += 5;
+        }
+        
+        // Bonus for exact tag matches
+        if (product.tags.some(tag => tag.toLowerCase() === term)) {
+          score += 3;
+        }
+      });
+      
+      return { product, score };
     });
+    
+    // Sort by score and filter out zero scores
+    const results = scoredProducts
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.product);
+    
+    console.log(`🔍 Found ${results.length} matching products`);
+    
+    // If no results, return all products
+    if (results.length === 0) {
+      console.log('⚠️ No matching products found, returning all products');
+      return allProducts;
+    }
+    
+    return results;
   }
   
   async categorizeProducts(products: Product[]): Promise<{ [category: string]: Product[] }> {

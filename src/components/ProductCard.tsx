@@ -30,105 +30,288 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100 group">
-      <div className="relative overflow-hidden">
+    <div style={{
+      background: 'white',
+      borderRadius: '16px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+      overflow: 'hidden',
+      border: '1px solid #e2e8f0',
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+      position: 'relative'
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)';
+      e.currentTarget.style.transform = 'translateY(-2px)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+      e.currentTarget.style.transform = 'translateY(0)';
+    }}
+    onClick={handleViewProduct}
+    >
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
         <img
           src={product.image}
           alt={product.title}
-          className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+          style={{
+            width: '100%',
+            height: '160px',
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
         />
         {product.discount_percentage && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            left: '12px',
+            background: '#ef4444',
+            color: 'white',
+            fontSize: '12px',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontWeight: '600'
+          }}>
             -{product.discount_percentage}%
           </div>
         )}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          opacity: 0,
+          transition: 'opacity 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+        >
           <button
             onClick={handleAddToWishlist}
-            className="p-1.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white shadow-sm transition-colors"
+            style={{
+              padding: '8px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(4px)',
+              borderRadius: '50%',
+              border: 'none',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'white';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            <Heart className="w-3 h-3 text-gray-600 hover:text-red-500" />
+            <Heart size={16} color="#64748b" />
           </button>
         </div>
         {product.availability === 'limited' && (
-          <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+          <div style={{
+            position: 'absolute',
+            bottom: '12px',
+            left: '12px',
+            background: '#f97316',
+            color: 'white',
+            fontSize: '12px',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontWeight: '600'
+          }}>
             Limited Stock
           </div>
         )}
       </div>
       
-      <div className="p-3">
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1 min-w-0">
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          justifyContent: 'space-between',
+          marginBottom: '8px'
+        }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             {product.brand && (
-              <p className="text-xs text-gray-500 font-medium truncate">{product.brand}</p>
+              <p style={{
+                fontSize: '12px',
+                color: '#64748b',
+                fontWeight: '600',
+                marginBottom: '4px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>{product.brand}</p>
             )}
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+            <h3 style={{
+              fontWeight: '700',
+              color: '#0f172a',
+              fontSize: '15px',
+              lineHeight: '1.3',
+              marginBottom: '6px',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxHeight: '2.6em'
+            }}>
               {product.title}
             </h3>
           </div>
         </div>
         
-        <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+        <p style={{
+          fontSize: '13px',
+          color: '#64748b',
+          marginBottom: '12px',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxHeight: '3em',
+          lineHeight: '1.5'
+        }}>
           {product.description}
         </p>
         
         {product.rating && (
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '12px'
+          }}>
+            <div style={{ display: 'flex' }}>
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-2.5 h-2.5 ${
-                    i < Math.floor(product.rating!)
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300'
-                  }`}
+                  size={14}
+                  fill={i < Math.floor(product.rating!) ? '#facc15' : 'none'}
+                  color={i < Math.floor(product.rating!) ? '#facc15' : '#cbd5e1'}
                 />
               ))}
             </div>
-            <span className="text-xs text-gray-500">
-              ({product.reviewCount})
+            <span style={{ fontSize: '12px', color: '#64748b' }}>
+              ({product.reviewCount || 0})
             </span>
           </div>
         )}
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <span className="text-base font-bold text-gray-900">
-              ${product.price}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{
+              fontSize: '18px',
+              fontWeight: '800',
+              color: '#0f172a'
+            }}>
+              ${product.price.toFixed(2)}
             </span>
             {product.originalPrice && (
-              <span className="text-xs text-gray-500 line-through">
-                ${product.originalPrice}
+              <span style={{
+                fontSize: '13px',
+                color: '#94a3b8',
+                textDecoration: 'line-through'
+              }}>
+                ${product.originalPrice.toFixed(2)}
               </span>
             )}
           </div>
           
-          <div className="flex items-center gap-1">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={handleViewProduct}
-              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+              style={{
+                padding: '8px',
+                color: '#64748b',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#0f172a';
+                e.currentTarget.style.background = '#f1f5f9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#64748b';
+                e.currentTarget.style.background = 'transparent';
+              }}
               title="View Product"
             >
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink size={16} />
             </button>
             <button
               onClick={handleAddToCart}
               disabled={product.availability === 'out_of_stock'}
-              className="flex items-center gap-1 px-2.5 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-xs font-medium transition-colors"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                background: product.availability === 'out_of_stock' ? '#cbd5e1' : '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: product.availability === 'out_of_stock' ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (product.availability !== 'out_of_stock') {
+                  e.currentTarget.style.background = '#7c3aed';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (product.availability !== 'out_of_stock') {
+                  e.currentTarget.style.background = '#8b5cf6';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
+              }}
             >
-              <ShoppingCart className="w-3 h-3" />
+              <ShoppingCart size={14} />
               Add
             </button>
           </div>
         </div>
         
-        <div className="flex flex-wrap gap-1 mt-2">
-          {product.tags.slice(0, 2).map((tag) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          {product.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full"
+              style={{
+                fontSize: '11px',
+                background: '#f1f5f9',
+                color: '#64748b',
+                padding: '4px 8px',
+                borderRadius: '8px',
+                fontWeight: '500'
+              }}
             >
               {tag}
             </span>

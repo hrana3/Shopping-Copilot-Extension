@@ -45,64 +45,8 @@ interface ShopifyGlobals {
 }
 
 declare global {
-  interface Window extends ShopifyGlobals {}
-}
-
-/**
- * Debug function to inspect document context
- */
-function debugDocumentContext(context: string): void {
-  console.log(`DEBUG [${context}]: Document context inspection:`);
-  console.log(`DEBUG [${context}]: document === global.document:`, document === (global as any).document);
-  console.log(`DEBUG [${context}]: document.constructor.name:`, document.constructor.name);
-  console.log(`DEBUG [${context}]: document.documentElement exists:`, !!document.documentElement);
-  console.log(`DEBUG [${context}]: document.head exists:`, !!document.head);
-  console.log(`DEBUG [${context}]: document.body exists:`, !!document.body);
-  console.log(`DEBUG [${context}]: document.querySelectorAll exists:`, typeof document.querySelectorAll);
-  
-  // Test basic query
-  const allElements = document.querySelectorAll('*');
-  console.log(`DEBUG [${context}]: Total elements in document:`, allElements.length);
-  
-  // Test specific queries that are failing
-  const scripts = document.querySelectorAll('script');
-  console.log(`DEBUG [${context}]: Script tags found:`, scripts.length);
-  
-  const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
-  console.log(`DEBUG [${context}]: JSON-LD scripts found:`, jsonLdScripts.length);
-  
-  const dataProductElements = document.querySelectorAll('[data-product-id]');
-  console.log(`DEBUG [${context}]: Elements with data-product-id:`, dataProductElements.length);
-  
-  // Log first few script tags for inspection
-  scripts.forEach((script, index) => {
-    if (index < 3) {
-      console.log(`DEBUG [${context}]: Script ${index + 1} - type: "${script.type}", id: "${script.id}", content length: ${script.textContent?.length || 0}`);
-    }
-  });
-  
-  // Find elements with data attributes using a different approach
-  try {
-    const elementsWithDataAttrs: Element[] = [];
-    allElements.forEach((element) => {
-      const hasDataAttrs = Array.from(element.attributes).some(attr => attr.name.startsWith('data-'));
-      if (hasDataAttrs) {
-        elementsWithDataAttrs.push(element);
-      }
-    });
-    
-    console.log(`DEBUG [${context}]: Elements with data-* attributes:`, elementsWithDataAttrs.length);
-    elementsWithDataAttrs.forEach((element, index) => {
-      if (index < 3) {
-        const attrs = Array.from(element.attributes)
-          .filter(attr => attr.name.startsWith('data-'))
-          .map(attr => `${attr.name}="${attr.value}"`)
-          .join(', ');
-        console.log(`DEBUG [${context}]: Element ${index + 1} - tag: ${element.tagName}, data attrs: [${attrs}]`);
-      }
-    });
-  } catch (error) {
-    console.warn(`DEBUG [${context}]: Error finding data attributes:`, error);
+  interface Window extends ShopifyGlobals {
+    Shopify?: any;
   }
 }
 
@@ -111,37 +55,45 @@ function debugDocumentContext(context: string): void {
  */
 export function detectShopify(): boolean {
   try {
-    console.log('DEBUG: Starting Shopify detection...');
-    debugDocumentContext('detectShopify');
+    console.log('🔍 Starting Shopify detection...');
     
     // Check for Shopify globals
-    console.log('DEBUG: Checking for ShopifyAnalytics:', !!window.ShopifyAnalytics);
-    console.log('DEBUG: Checking for __st:', !!window.__st);
-    if (window.ShopifyAnalytics || window.__st) {
-      console.log('DEBUG: Found Shopify globals');
+    console.log('🔍 Checking for ShopifyAnalytics:', !!window.ShopifyAnalytics);
+    console.log('🔍 Checking for __st:', !!window.__st);
+    console.log('🔍 Checking for Shopify:', !!window.Shopify);
+    
+    if (window.ShopifyAnalytics || window.__st || window.Shopify) {
+      console.log('✅ Found Shopify globals');
       return true;
     }
 
     // Check for Shopify script tags
     const shopifySettings = document.querySelector('script#ShopifySettings');
-    console.log('DEBUG: Found ShopifySettings script:', !!shopifySettings);
+    console.log('🔍 Found ShopifySettings script:', !!shopifySettings);
     if (shopifySettings) {
-      console.log('DEBUG: Found ShopifySettings script');
+      console.log('✅ Found ShopifySettings script');
       return true;
     }
 
     // Check for Shopify meta tags
     const shopifyMeta = document.querySelector('meta[name="shopify-checkout-api-token"]');
-    console.log('DEBUG: Found Shopify meta tag:', !!shopifyMeta);
+    console.log('🔍 Found Shopify meta tag:', !!shopifyMeta);
     if (shopifyMeta) {
-      console.log('DEBUG: Found Shopify meta tag');
+      console.log('✅ Found Shopify meta tag');
+      return true;
+    }
+    
+    // Check for Shopify in URL
+    if (window.location.hostname.includes('shopify') || 
+        window.location.hostname.includes('myshopify')) {
+      console.log('✅ Found Shopify in URL');
       return true;
     }
 
-    console.log('DEBUG: No Shopify indicators found');
+    console.log('❌ No Shopify indicators found');
     return false;
   } catch (error) {
-    console.warn('Error detecting Shopify:', error);
+    console.warn('⚠️ Error detecting Shopify:', error);
     return false;
   }
 }
@@ -152,12 +104,14 @@ export function detectShopify(): boolean {
 export function matchesShopifyPage(): boolean {
   try {
     const pathname = window.location.pathname;
-    console.log('DEBUG: Checking pathname:', pathname);
-    const isMatch = pathname.includes('/collections/') || pathname.includes('/products/');
-    console.log('DEBUG: Page matches Shopify pattern:', isMatch);
+    console.log('🔍 Checking pathname:', pathname);
+    const isMatch = pathname.includes('/collections/') || 
+                   pathname.includes('/products/') || 
+                   pathname.includes('/product/');
+    console.log('🔍 Page matches Shopify pattern:', isMatch);
     return isMatch;
   } catch (error) {
-    console.warn('Error matching Shopify page:', error);
+    console.warn('⚠️ Error matching Shopify page:', error);
     return false;
   }
 }
@@ -167,29 +121,29 @@ export function matchesShopifyPage(): boolean {
  */
 function extractFromShopifyAnalytics(): ShopifyProduct[] {
   try {
-    console.log('DEBUG: Extracting from ShopifyAnalytics...');
+    console.log('🔍 Extracting from ShopifyAnalytics...');
     const analytics = window.ShopifyAnalytics;
     if (!analytics?.meta) {
-      console.log('DEBUG: No ShopifyAnalytics.meta found');
+      console.log('❌ No ShopifyAnalytics.meta found');
       return [];
     }
 
     const products: ShopifyProduct[] = [];
     
     if (analytics.meta.product) {
-      console.log('DEBUG: Found product in ShopifyAnalytics.meta');
+      console.log('✅ Found product in ShopifyAnalytics.meta');
       products.push(analytics.meta.product);
     }
     
     if (analytics.meta.products) {
-      console.log('DEBUG: Found products array in ShopifyAnalytics.meta:', analytics.meta.products.length);
+      console.log('✅ Found products array in ShopifyAnalytics.meta:', analytics.meta.products.length);
       products.push(...analytics.meta.products);
     }
 
-    console.log('DEBUG: ShopifyAnalytics extraction result:', products.length, 'products');
+    console.log('✅ ShopifyAnalytics extraction result:', products.length, 'products');
     return products;
   } catch (error) {
-    console.warn('Error extracting from ShopifyAnalytics:', error);
+    console.warn('⚠️ Error extracting from ShopifyAnalytics:', error);
     return [];
   }
 }
@@ -199,29 +153,29 @@ function extractFromShopifyAnalytics(): ShopifyProduct[] {
  */
 function extractFromWindowSt(): ShopifyProduct[] {
   try {
-    console.log('DEBUG: Extracting from window.__st...');
+    console.log('🔍 Extracting from window.__st...');
     const st = window.__st;
     if (!st?.meta) {
-      console.log('DEBUG: No window.__st.meta found');
+      console.log('❌ No window.__st.meta found');
       return [];
     }
 
     const products: ShopifyProduct[] = [];
     
     if (st.meta.product) {
-      console.log('DEBUG: Found product in window.__st.meta');
+      console.log('✅ Found product in window.__st.meta');
       products.push(st.meta.product);
     }
     
     if (st.meta.products) {
-      console.log('DEBUG: Found products array in window.__st.meta:', st.meta.products.length);
+      console.log('✅ Found products array in window.__st.meta:', st.meta.products.length);
       products.push(...st.meta.products);
     }
 
-    console.log('DEBUG: window.__st extraction result:', products.length, 'products');
+    console.log('✅ window.__st extraction result:', products.length, 'products');
     return products;
   } catch (error) {
-    console.warn('Error extracting from window.__st:', error);
+    console.warn('⚠️ Error extracting from window.__st:', error);
     return [];
   }
 }
@@ -231,61 +185,31 @@ function extractFromWindowSt(): ShopifyProduct[] {
  */
 function extractFromJsonLd(): ShopifyProduct[] {
   try {
-    console.log('DEBUG: Extracting from JSON-LD...');
-    debugDocumentContext('extractFromJsonLd');
+    console.log('🔍 Extracting from JSON-LD...');
     
     const products: ShopifyProduct[] = [];
     
-    // More robust script selection - try multiple approaches
-    let jsonLdScripts: NodeListOf<HTMLScriptElement>;
-    
-    // First try the standard approach
-    jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
-    console.log('DEBUG: Found JSON-LD scripts (standard query):', jsonLdScripts.length);
-    
-    // If that fails, try a more general approach
-    if (jsonLdScripts.length === 0) {
-      const allScripts = document.querySelectorAll('script');
-      console.log('DEBUG: Total script tags found:', allScripts.length);
-      
-      const ldJsonScripts: HTMLScriptElement[] = [];
-      allScripts.forEach((script, index) => {
-        console.log(`DEBUG: Script ${index + 1} type: "${script.type}", id: "${script.id}"`);
-        if (script.type === 'application/ld+json') {
-          ldJsonScripts.push(script);
-          console.log(`DEBUG: Found JSON-LD script at index ${index + 1}`);
-        }
-      });
-      
-      jsonLdScripts = {
-        length: ldJsonScripts.length,
-        forEach: (callback: (script: HTMLScriptElement, index: number) => void) => {
-          ldJsonScripts.forEach(callback);
-        }
-      } as any;
-      
-      console.log('DEBUG: Found JSON-LD scripts (manual search):', jsonLdScripts.length);
-    }
+    // Get all JSON-LD scripts
+    const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
+    console.log('🔍 Found JSON-LD scripts:', jsonLdScripts.length);
 
     jsonLdScripts.forEach((script, index) => {
       try {
-        console.log(`DEBUG: Processing JSON-LD script ${index + 1}`);
-        console.log(`DEBUG: Script content length:`, script.textContent?.length || 0);
-        console.log(`DEBUG: Script content preview:`, script.textContent?.substring(0, 100));
+        console.log(`🔍 Processing JSON-LD script ${index + 1}`);
         
         if (!script.textContent?.trim()) {
-          console.log(`DEBUG: Script ${index + 1} has no content`);
+          console.log(`❌ Script ${index + 1} has no content`);
           return;
         }
         
         const data = JSON.parse(script.textContent);
         const items = Array.isArray(data) ? data : [data];
-        console.log(`DEBUG: JSON-LD script ${index + 1} contains ${items.length} items`);
+        console.log(`🔍 JSON-LD script ${index + 1} contains ${items.length} items`);
 
         items.forEach((item, itemIndex) => {
-          console.log(`DEBUG: Processing item ${itemIndex + 1}, type:`, item['@type']);
+          console.log(`🔍 Processing item ${itemIndex + 1}, type:`, item['@type']);
           if (item['@type'] === 'Product') {
-            console.log('DEBUG: Found Product in JSON-LD');
+            console.log('✅ Found Product in JSON-LD');
             const product: ShopifyProduct = {
               id: item.productID || item.sku,
               title: item.name,
@@ -303,23 +227,23 @@ function extractFromJsonLd(): ShopifyProduct[] {
               if (offer) {
                 product.price = parseFloat(offer.price);
                 product.available = offer.availability === 'https://schema.org/InStock';
-                console.log('DEBUG: Extracted price from offers:', product.price);
+                console.log('✅ Extracted price from offers:', product.price);
               }
             }
 
             products.push(product);
-            console.log('DEBUG: Added product from JSON-LD:', product.title);
+            console.log('✅ Added product from JSON-LD:', product.title);
           }
         });
       } catch (parseError) {
-        console.warn(`Error parsing JSON-LD script ${index + 1}:`, parseError);
+        console.warn(`⚠️ Error parsing JSON-LD script ${index + 1}:`, parseError);
       }
     });
 
-    console.log('DEBUG: JSON-LD extraction result:', products.length, 'products');
+    console.log('✅ JSON-LD extraction result:', products.length, 'products');
     return products;
   } catch (error) {
-    console.warn('Error extracting from JSON-LD:', error);
+    console.warn('⚠️ Error extracting from JSON-LD:', error);
     return [];
   }
 }
@@ -342,68 +266,72 @@ function extractPrice(text: string): number | undefined {
  */
 function extractFromDom(): ShopifyProduct[] {
   try {
-    console.log('DEBUG: Extracting from DOM...');
-    debugDocumentContext('extractFromDom');
+    console.log('🔍 Extracting from DOM...');
     
     const products: ShopifyProduct[] = [];
     
-    // More robust element selection
-    let productElements: NodeListOf<Element>;
+    // Try multiple selectors to find product elements
+    const selectors = [
+      '[data-product-id]',
+      '.product',
+      '.product-item',
+      '.product-card',
+      '.product-grid-item',
+      '.product-list-item',
+      '[data-product]',
+      '[data-product-handle]'
+    ];
     
-    // First try the standard approach
-    productElements = document.querySelectorAll('[data-product-id]');
-    console.log('DEBUG: Found DOM elements with data-product-id (standard query):', productElements.length);
+    let productElements: NodeListOf<Element> | Element[] = document.querySelectorAll(selectors.join(','));
+    console.log('🔍 Found DOM elements with product selectors:', productElements.length);
     
-    // If that fails, try a more general approach
+    // If no elements found with standard selectors, try a more aggressive approach
     if (productElements.length === 0) {
-      const allElements = document.querySelectorAll('*');
-      console.log('DEBUG: Total elements found:', allElements.length);
+      console.log('🔍 Trying alternative product detection...');
       
+      // Look for elements with product-like attributes
+      const allElements = document.querySelectorAll('*');
       const productEls: Element[] = [];
-      allElements.forEach((element, index) => {
-        // Check multiple ways to detect data-product-id
-        const hasDataProductId = element.hasAttribute('data-product-id');
-        const dataProductIdValue = element.getAttribute('data-product-id');
+      
+      allElements.forEach(element => {
+        // Check for product-related attributes
+        const attrs = Array.from(element.attributes);
+        const hasProductAttr = attrs.some(attr => 
+          attr.name.includes('product') || 
+          attr.value.includes('product')
+        );
         
-        if (index < 10) { // Log first 10 elements for debugging
-          console.log(`DEBUG: Element ${index + 1} - tag: ${element.tagName}, hasAttribute: ${hasDataProductId}, value: "${dataProductIdValue}"`);
-        }
-        
-        if (hasDataProductId && dataProductIdValue) {
-          console.log(`DEBUG: Found element with data-product-id at index ${index}:`, element.tagName, `value: "${dataProductIdValue}"`);
+        if (hasProductAttr) {
           productEls.push(element);
         }
       });
       
-      productElements = {
-        length: productEls.length,
-        forEach: (callback: (element: Element, index: number) => void) => {
-          productEls.forEach(callback);
-        }
-      } as any;
-      
-      console.log('DEBUG: Found DOM elements with data-product-id (manual search):', productElements.length);
+      productElements = productEls;
+      console.log('🔍 Found product elements with alternative detection:', productElements.length);
     }
 
     productElements.forEach((element, index) => {
       try {
-        console.log(`DEBUG: Processing DOM element ${index + 1}`);
-        const productId = element.getAttribute('data-product-id');
-        if (!productId) {
-          console.log(`DEBUG: Element ${index + 1} missing product ID`);
-          return;
-        }
-
-        console.log(`DEBUG: Element ${index + 1} product ID:`, productId);
+        console.log(`🔍 Processing DOM element ${index + 1}`);
+        
+        // Try to get product ID
+        const productId = element.getAttribute('data-product-id') || 
+                         element.getAttribute('data-product') || 
+                         element.getAttribute('data-id') || 
+                         `dom-product-${index}`;
+        
+        console.log(`🔍 Element ${index + 1} product ID:`, productId);
 
         // Extract title
         const titleSelectors = [
           '[data-product-title]',
           '.product-title',
           '.product-name',
+          'h1',
           'h2',
           'h3',
-          '.title'
+          '.title',
+          '[itemprop="name"]'
         ];
         
         let title = '';
@@ -411,20 +339,45 @@ function extractFromDom(): ShopifyProduct[] {
           const titleEl = element.querySelector(selector);
           if (titleEl?.textContent?.trim()) {
             title = titleEl.textContent.trim();
-            console.log(`DEBUG: Found title using selector "${selector}":`, title);
+            console.log(`✅ Found title using selector "${selector}":`, title);
             break;
+          }
+        }
+        
+        // If no title found with selectors, try the element itself
+        if (!title && element.textContent) {
+          const text = element.textContent.trim();
+          if (text.length > 0 && text.length < 100) {
+            title = text;
+            console.log(`✅ Found title from element text:`, title);
           }
         }
 
         if (!title) {
-          console.log(`DEBUG: Element ${index + 1} missing title, skipping`);
+          console.log(`❌ Element ${index + 1} missing title, skipping`);
           return; // Skip if no title found
         }
 
         // Extract image
-        const imgEl = element.querySelector('img');
-        const image = imgEl?.src || imgEl?.getAttribute('data-src');
-        console.log(`DEBUG: Found image:`, image);
+        const imgSelectors = [
+          'img',
+          '[data-product-image] img',
+          '.product-image img',
+          '.product-img img',
+          '[itemprop="image"]'
+        ];
+        
+        let image = '';
+        for (const selector of imgSelectors) {
+          const imgEl = element.querySelector(selector) as HTMLImageElement;
+          if (imgEl) {
+            image = imgEl.src || imgEl.getAttribute('data-src') || imgEl.getAttribute('data-lazy-src') || '';
+            if (image) {
+              console.log(`✅ Found image using selector "${selector}":`, image);
+              break;
+            }
+          }
+        }
 
         // Extract price
         const priceSelectors = [
@@ -432,7 +385,10 @@ function extractFromDom(): ShopifyProduct[] {
           '.product-price',
           '.money',
           '[data-price]',
-          '.price-current'
+          '.price-current',
+          '[itemprop="price"]',
+          '.price__current',
+          '.price-item'
         ];
         
         let price: number | undefined;
@@ -441,16 +397,35 @@ function extractFromDom(): ShopifyProduct[] {
           if (priceEl?.textContent) {
             price = extractPrice(priceEl.textContent);
             if (price !== undefined) {
-              console.log(`DEBUG: Found price using selector "${selector}":`, price);
+              console.log(`✅ Found price using selector "${selector}":`, price);
               break;
             }
           }
         }
+        
+        // If no price found, try to find any number in the element
+        if (price === undefined && element.textContent) {
+          const priceMatch = element.textContent.match(/\$\s?(\d+(\.\d{1,2})?)/);
+          if (priceMatch && priceMatch[1]) {
+            price = parseFloat(priceMatch[1]);
+            console.log(`✅ Found price from text:`, price);
+          }
+        }
 
         // Extract URL
+        let url = '';
         const linkEl = element.querySelector('a[href]') as HTMLAnchorElement;
-        const url = linkEl?.href;
-        console.log(`DEBUG: Found URL:`, url);
+        if (linkEl) {
+          url = linkEl.href;
+          console.log(`✅ Found URL:`, url);
+        }
+        
+        // If no URL found, try to construct one
+        if (!url) {
+          const handle = element.getAttribute('data-product-handle') || title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '-');
+          url = `/products/${handle}`;
+          console.log(`✅ Constructed URL:`, url);
+        }
 
         const product: ShopifyProduct = {
           id: productId,
@@ -458,20 +433,21 @@ function extractFromDom(): ShopifyProduct[] {
           featured_image: image,
           price,
           url,
-          available: true // Assume available if found in DOM
+          available: true, // Assume available if found in DOM
+          description: element.querySelector('.product-description')?.textContent?.trim() || ''
         };
 
         products.push(product);
-        console.log(`DEBUG: Added DOM product:`, product.title);
+        console.log(`✅ Added DOM product:`, product.title);
       } catch (elementError) {
-        console.warn(`Error extracting product from DOM element ${index + 1}:`, elementError);
+        console.warn(`⚠️ Error extracting product from DOM element ${index + 1}:`, elementError);
       }
     });
 
-    console.log('DEBUG: DOM extraction result:', products.length, 'products');
+    console.log('✅ DOM extraction result:', products.length, 'products');
     return products;
   } catch (error) {
-    console.warn('Error extracting from DOM:', error);
+    console.warn('⚠️ Error extracting from DOM:', error);
     return [];
   }
 }
@@ -482,7 +458,7 @@ function extractFromDom(): ShopifyProduct[] {
 function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
   try {
     if (!shopifyProduct.id || !shopifyProduct.title) {
-      console.log('DEBUG: Skipping product mapping - missing ID or title');
+      console.log('❌ Skipping product mapping - missing ID or title');
       return null;
     }
 
@@ -492,14 +468,26 @@ function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
       price = shopifyProduct.price_min;
     }
     if (price === undefined) {
-      console.log('DEBUG: Skipping product mapping - missing price');
+      console.log('❌ Skipping product mapping - missing price');
       return null; // Price is required
+    }
+    
+    // Convert from cents to dollars if needed (Shopify stores prices in cents)
+    if (typeof price === 'number' && price > 100 && !String(price).includes('.')) {
+      price = price / 100;
+      console.log('🔄 Converted price from cents to dollars:', price);
     }
 
     // Determine original price for discount calculation
     let originalPrice = shopifyProduct.compare_at_price;
     if (originalPrice === undefined) {
       originalPrice = shopifyProduct.compare_at_price_min;
+    }
+    
+    // Convert original price from cents if needed
+    if (typeof originalPrice === 'number' && originalPrice > 100 && !String(originalPrice).includes('.')) {
+      originalPrice = originalPrice / 100;
+      console.log('🔄 Converted original price from cents to dollars:', originalPrice);
     }
 
     // Calculate discount percentage
@@ -529,11 +517,27 @@ function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
     if (!productUrl) {
       productUrl = window.location.href;
     }
+    
+    // Make sure URL is absolute
+    if (productUrl && productUrl.startsWith('/')) {
+      productUrl = `${window.location.origin}${productUrl}`;
+    }
+    
+    // Extract tags
+    let tags = shopifyProduct.tags || [];
+    if (!tags.length && shopifyProduct.product_type) {
+      tags = [shopifyProduct.product_type];
+    }
+    
+    // Ensure we have at least one tag
+    if (tags.length === 0) {
+      tags = ['product'];
+    }
 
     const product: Product = {
       id: String(shopifyProduct.id),
       title: shopifyProduct.title,
-      description: shopifyProduct.description || '',
+      description: shopifyProduct.description || 'No description available',
       price: price,
       originalPrice: originalPrice,
       currency: 'USD', // Default to USD, could be extracted from page
@@ -541,16 +545,16 @@ function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
       images: shopifyProduct.images,
       brand: shopifyProduct.vendor,
       category: shopifyProduct.product_type || 'General',
-      tags: shopifyProduct.tags || [],
+      tags: tags,
       availability: availability,
       url: productUrl,
       discount_percentage: discountPercentage
     };
 
-    console.log('DEBUG: Successfully mapped product:', product.title);
+    console.log('✅ Successfully mapped product:', product.title);
     return product;
   } catch (error) {
-    console.warn('Error mapping Shopify product:', error);
+    console.warn('⚠️ Error mapping Shopify product:', error);
     return null;
   }
 }
@@ -559,8 +563,7 @@ function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
  * Extracts all products from the current Shopify page
  */
 export function extractProducts(): Product[] {
-  console.log('DEBUG: Starting product extraction...');
-  debugDocumentContext('extractProducts');
+  console.log('🚀 Starting product extraction...');
   
   const allProducts: Product[] = [];
 
@@ -574,22 +577,22 @@ export function extractProducts(): Product[] {
 
   for (const method of extractionMethods) {
     try {
-      console.log(`DEBUG: Trying extraction method: ${method.name}`);
+      console.log(`🔍 Trying extraction method: ${method.name}`);
       const shopifyProducts = method();
       if (shopifyProducts.length > 0) {
-        console.log(`Extracted ${shopifyProducts.length} products using ${method.name}`);
+        console.log(`✅ Extracted ${shopifyProducts.length} products using ${method.name}`);
         
         // Map to our Product interface
         const mappedProducts = shopifyProducts
           .map(mapShopifyToProduct)
           .filter((product): product is Product => product !== null);
         
-        console.log(`DEBUG: Successfully mapped ${mappedProducts.length} products`);
+        console.log(`✅ Successfully mapped ${mappedProducts.length} products`);
         allProducts.push(...mappedProducts);
         break; // Use first successful method
       }
     } catch (error) {
-      console.warn(`Error in extraction method ${method.name}:`, error);
+      console.warn(`⚠️ Error in extraction method ${method.name}:`, error);
     }
   }
 
@@ -598,7 +601,7 @@ export function extractProducts(): Product[] {
     array.findIndex(p => p.id === product.id) === index
   );
 
-  console.log(`Final extracted products: ${uniqueProducts.length}`);
+  console.log(`🎉 Final extracted products: ${uniqueProducts.length}`);
   return uniqueProducts;
 }
 
@@ -607,25 +610,51 @@ export function extractProducts(): Product[] {
  */
 export function initShopifyParser(): void {
   try {
+    console.log('🚀 Initializing Shopify parser...');
+    
     // Check if this is a Shopify site
     if (!detectShopify()) {
-      console.log('Not a Shopify site, skipping parser initialization');
+      console.log('❌ Not a Shopify site, skipping parser initialization');
+      
+      // Try to extract products from DOM anyway
+      const domProducts = extractFromDom();
+      if (domProducts.length > 0) {
+        console.log(`✅ Found ${domProducts.length} products from DOM`);
+        
+        // Map to our Product interface
+        const mappedProducts = domProducts
+          .map(mapShopifyToProduct)
+          .filter((product): product is Product => product !== null);
+        
+        if (mappedProducts.length > 0) {
+          console.log(`✅ Mapped ${mappedProducts.length} DOM products`);
+          
+          // Store products for the chat widget to access
+          (window as any).__browseableAiProducts = mappedProducts;
+          
+          // Dispatch custom event to notify chat widget
+          window.dispatchEvent(new CustomEvent('browseableAiProductsExtracted', {
+            detail: { products: mappedProducts }
+          }));
+        }
+      }
+      
       return;
     }
 
     // Check if this is a relevant Shopify page
-    if (!matchesShopifyPage()) {
-      console.log('Not a Shopify product/collection page, skipping parser initialization');
+    if (!matchesShopifyPage() && !window.location.pathname.includes('/product')) {
+      console.log('❌ Not a Shopify product/collection page, skipping parser initialization');
       return;
     }
 
-    console.log('Initializing Shopify parser...');
+    console.log('✅ Initializing Shopify parser on Shopify page...');
     
     // Extract products
     const products = extractProducts();
     
     if (products.length > 0) {
-      console.log(`Successfully extracted ${products.length} products from Shopify page`);
+      console.log(`✅ Successfully extracted ${products.length} products from Shopify page`);
       
       // Store products for the chat widget to access
       (window as any).__browseableAiProducts = products;
@@ -635,9 +664,9 @@ export function initShopifyParser(): void {
         detail: { products }
       }));
     } else {
-      console.log('No products found on this Shopify page');
+      console.log('❌ No products found on this Shopify page');
     }
   } catch (error) {
-    console.error('Error initializing Shopify parser:', error);
+    console.error('💥 Error initializing Shopify parser:', error);
   }
 }
