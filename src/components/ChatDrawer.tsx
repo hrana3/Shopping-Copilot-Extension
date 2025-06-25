@@ -48,14 +48,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   };
 
   const handleAddToCart = (product: Product) => {
-    // In a real implementation, this would integrate with the site's cart
     console.log('Adding to cart:', product);
-    // Show a toast notification or similar feedback
   };
 
   const handleAddToWishlist = (product: Product) => {
     console.log('Adding to wishlist:', product);
-    // In a real implementation, save to user's wishlist
   };
 
   const suggestedQueries = [
@@ -68,55 +65,177 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 z-50"
-      style={{ zIndex: 2147483646 }}
-      onClick={onClose}
-    >
+    <>
+      {/* Backdrop */}
       <div 
-        className="fixed right-4 top-4 bottom-4 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 flex flex-col rounded-2xl overflow-hidden"
+        className="browseable-chat-backdrop"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 2147483645,
+          pointerEvents: 'auto'
+        }}
+        onClick={onClose}
+      />
+      
+      {/* Drawer */}
+      <div 
+        className="browseable-chat-drawer"
+        style={{
+          position: 'fixed',
+          top: '16px',
+          right: '16px',
+          bottom: '16px',
+          width: '400px',
+          maxWidth: 'calc(100vw - 32px)',
+          background: 'white',
+          borderRadius: '16px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          zIndex: 2147483646,
+          pointerEvents: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-blue-50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '20px',
+          borderBottom: '1px solid #f3f4f6',
+          background: 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Sparkles size={20} color="white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Browseable.ai</h2>
-              <p className="text-xs text-gray-600">Your AI Shopping Co-Pilot</p>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+                lineHeight: '1.2'
+              }}>Browseable.ai</h2>
+              <p style={{
+                fontSize: '12px',
+                color: '#6b7280',
+                margin: 0,
+                lineHeight: '1.2'
+              }}>Your AI Shopping Co-Pilot</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+            style={{
+              padding: '8px',
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f3f4f6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X size={16} color="#6b7280" />
           </button>
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
           {messages.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <ShoppingBag className="w-6 h-6 text-purple-600" />
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: 'linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 12px'
+              }}>
+                <ShoppingBag size={24} color="#8b5cf6" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-2">
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#111827',
+                margin: '0 0 8px',
+                lineHeight: '1.3'
+              }}>
                 Welcome to your AI Shopping Assistant!
               </h3>
-              <p className="text-sm text-gray-600 mb-4 px-2">
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: '0 0 16px',
+                lineHeight: '1.4'
+              }}>
                 I'll help you find the perfect products based on your style and preferences.
               </p>
               
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-700 mb-2">Try asking me:</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <p style={{
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  margin: '0 0 8px'
+                }}>Try asking me:</p>
                 {suggestedQueries.map((query, index) => (
                   <button
                     key={index}
                     onClick={() => setInputMessage(query)}
-                    className="block w-full text-left p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-xs text-gray-700 transition-colors"
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '10px',
+                      background: '#f9fafb',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      color: '#374151',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      lineHeight: '1.3'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                    }}
                   >
                     "{query}"
                   </button>
@@ -126,26 +245,42 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           ) : (
             <>
               {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] px-3 py-2 rounded-2xl ${
-                    message.type === 'user'
-                      ? 'bg-purple-600 text-white rounded-br-md'
-                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                  }`}>
-                    <p className="text-sm leading-relaxed">{message.content}</p>
+                <div key={message.id} style={{
+                  display: 'flex',
+                  justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start'
+                }}>
+                  <div style={{
+                    maxWidth: '85%',
+                    padding: '12px',
+                    borderRadius: '16px',
+                    background: message.type === 'user' ? '#8b5cf6' : '#f3f4f6',
+                    color: message.type === 'user' ? 'white' : '#111827',
+                    borderBottomRightRadius: message.type === 'user' ? '4px' : '16px',
+                    borderBottomLeftRadius: message.type === 'user' ? '16px' : '4px'
+                  }}>
+                    <p style={{
+                      fontSize: '14px',
+                      lineHeight: '1.4',
+                      margin: 0
+                    }}>{message.content}</p>
                   </div>
                 </div>
               ))}
               
               {/* Products Grid */}
               {products.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                <div style={{ marginTop: '16px' }}>
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#111827',
+                    margin: '0 0 12px'
+                  }}>
                     Recommended Products
                   </h3>
-                  <div className="space-y-3">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {products.slice(0, 4).map((product) => (
-                      <div key={product.id} className="transform scale-95">
+                      <div key={product.id} style={{ transform: 'scale(0.95)' }}>
                         <ProductCard
                           product={product}
                           onAddToCart={handleAddToCart}
@@ -160,10 +295,18 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           )}
           
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-2xl rounded-bl-md px-3 py-2 flex items-center gap-2">
-                <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
-                <span className="text-xs text-gray-600">AI is thinking...</span>
+            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{
+                background: '#f3f4f6',
+                borderRadius: '16px',
+                borderBottomLeftRadius: '4px',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Loader2 size={12} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>AI is thinking...</span>
               </div>
             </div>
           )}
@@ -172,31 +315,61 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-100 p-4">
-          <form onSubmit={handleSendMessage} className="flex gap-2">
+        <div style={{
+          borderTop: '1px solid #f3f4f6',
+          padding: '16px'
+        }}>
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px' }}>
             <input
               ref={inputRef}
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Ask me about products, styles, or recommendations..."
-              className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+              style={{
+                flex: 1,
+                padding: '10px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '12px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s, box-shadow 0.2s'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#8b5cf6';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
-              className="px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+              style={{
+                padding: '10px 16px',
+                background: inputMessage.trim() && !isLoading ? '#8b5cf6' : '#d1d5db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
+                transition: 'background-color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
               ) : (
-                <Send className="w-4 h-4" />
+                <Send size={16} />
               )}
             </button>
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 };

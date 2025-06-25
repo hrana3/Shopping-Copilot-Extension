@@ -10,11 +10,11 @@ console.log('🚀 Browseable.ai content script loaded!');
 console.log('📍 Current URL:', window.location.href);
 console.log('📄 Document ready state:', document.readyState);
 
-// Inline styles for the widget
+// Comprehensive CSS styles for the widget
 const createStyles = () => {
   const style = document.createElement('style');
   style.textContent = `
-    /* Browseable.ai Widget Styles */
+    /* Browseable.ai Widget Styles - Comprehensive Reset and Styling */
     #browseable-ai-widget {
       position: fixed !important;
       top: 0 !important;
@@ -23,13 +23,28 @@ const createStyles = () => {
       height: 100% !important;
       pointer-events: none !important;
       z-index: 2147483647 !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+      color: #374151 !important;
     }
     
-    #browseable-ai-widget * {
+    #browseable-ai-widget *,
+    #browseable-ai-widget *::before,
+    #browseable-ai-widget *::after {
       box-sizing: border-box !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     
+    #browseable-ai-widget button,
+    #browseable-ai-widget input,
+    #browseable-ai-widget a,
+    #browseable-ai-widget [role="button"] {
+      pointer-events: auto !important;
+    }
+    
+    /* Chat Bubble Styles */
     .browseable-chat-bubble {
       position: fixed !important;
       bottom: 24px !important;
@@ -48,6 +63,7 @@ const createStyles = () => {
       pointer-events: auto !important;
       border: none !important;
       color: white !important;
+      outline: none !important;
     }
     
     .browseable-chat-bubble:hover {
@@ -55,6 +71,12 @@ const createStyles = () => {
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
     }
     
+    .browseable-chat-bubble:focus {
+      outline: 2px solid #8b5cf6 !important;
+      outline-offset: 2px !important;
+    }
+    
+    /* Chat Drawer Styles */
     .browseable-chat-drawer {
       position: fixed !important;
       top: 16px !important;
@@ -72,6 +94,7 @@ const createStyles = () => {
       overflow: hidden !important;
     }
     
+    /* Backdrop Styles */
     .browseable-chat-backdrop {
       position: fixed !important;
       top: 0 !important;
@@ -82,6 +105,67 @@ const createStyles = () => {
       backdrop-filter: blur(4px) !important;
       z-index: 2147483645 !important;
       pointer-events: auto !important;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      .browseable-chat-drawer {
+        top: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
+        left: 8px !important;
+        width: auto !important;
+        max-width: none !important;
+      }
+      
+      .browseable-chat-bubble {
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+      }
+    }
+    
+    /* Animation Keyframes */
+    @keyframes browseableFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes browseableSlideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* Animation Classes */
+    .browseable-fade-in {
+      animation: browseableFadeIn 0.3s ease-out !important;
+    }
+    
+    .browseable-slide-in {
+      animation: browseableSlideIn 0.3s ease-out !important;
+    }
+    
+    /* Ensure no conflicts with page styles */
+    #browseable-ai-widget .reset {
+      all: initial !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
     }
   `;
   return style;
@@ -114,11 +198,12 @@ function initializeChatWidget() {
                           window.location.hostname.includes('shopify') ||
                           window.location.pathname.includes('product') ||
                           window.location.pathname.includes('shop') ||
-                          window.location.pathname.includes('collection');
+                          window.location.pathname.includes('collection') ||
+                          true; // Enable on all sites for testing
   
   if (!shouldInitialize) {
-    console.log('❌ Not an e-commerce page, but initializing anyway for testing');
-    // For debugging, let's initialize on all pages temporarily
+    console.log('❌ Not an e-commerce page, skipping widget initialization');
+    return;
   }
 
   console.log('✅ Initializing on', siteInfo.platform, 'site');

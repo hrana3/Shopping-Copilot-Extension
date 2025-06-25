@@ -17,21 +17,70 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-50 flex items-center justify-center group"
-      style={{ zIndex: 2147483647 }}
+      className="browseable-chat-bubble"
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        width: '56px',
+        height: '56px',
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+        borderRadius: '50%',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2147483647,
+        pointerEvents: 'auto',
+        border: 'none',
+        color: 'white'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.1)';
+        e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+      }}
     >
-      <div className="relative">
-        <MessageCircle className="w-6 h-6 transition-transform group-hover:scale-110" />
-        <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-yellow-300 animate-pulse" />
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <MessageCircle size={24} color="white" />
+        <Sparkles 
+          size={12} 
+          color="#fbbf24" 
+          style={{ 
+            position: 'absolute', 
+            top: '-4px', 
+            right: '-4px',
+            animation: 'pulse 2s infinite'
+          }} 
+        />
       </div>
       
       {hasNewMessage && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-full"></div>
+        <div style={{
+          position: 'absolute',
+          top: '-2px',
+          right: '-2px',
+          width: '16px',
+          height: '16px',
+          background: '#ef4444',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            background: 'white',
+            borderRadius: '50%'
+          }}></div>
         </div>
       )}
-      
-      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 animate-ping opacity-25"></div>
     </button>
   );
 };
