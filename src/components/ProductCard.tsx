@@ -60,6 +60,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             objectFit: 'cover',
             transition: 'transform 0.5s ease'
           }}
+          onError={(e) => {
+            // Fallback image if the product image fails to load
+            e.currentTarget.src = 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=800';
+          }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.05)';
           }}

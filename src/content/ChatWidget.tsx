@@ -15,15 +15,11 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     console.log('🔄 ChatWidget mounted, checking for products...');
     
-    // Check if we're on a product page
-    const isProductPage = window.location.pathname.includes('/product') || 
-                          window.location.pathname.includes('/products');
-    
-    // Try to extract products from the page
+    // Function to extract products from the page
     const extractProductsFromPage = () => {
       console.log('🔍 Attempting to extract products from page...');
       
-      // Check for Shopify products first
+      // Check for Shopify products first (set by shopifyParser)
       const shopifyProducts = (window as any).__browseableAiProducts;
       if (shopifyProducts && shopifyProducts.length > 0) {
         console.log('✅ Found Shopify products:', shopifyProducts.length);
@@ -45,7 +41,7 @@ export const ChatWidget: React.FC = () => {
       // Try to extract products from the page using DOM
       try {
         // Look for product elements
-        const productElements = document.querySelectorAll('[data-product-id], .product, .product-item, .product-card');
+        const productElements = document.querySelectorAll('[data-product-id], .product, .product-item, .product-card, [data-product-handle], [data-product]');
         if (productElements.length > 0) {
           console.log('✅ Found product elements:', productElements.length);
           
@@ -55,31 +51,108 @@ export const ChatWidget: React.FC = () => {
             if (index >= 10) return; // Limit to 10 products
             
             // Try to extract product info
-            const productId = element.getAttribute('data-product-id') || `dom-product-${index}`;
+            const productId = element.getAttribute('data-product-id') || 
+                             element.getAttribute('data-product') || 
+                             element.getAttribute('data-id') || 
+                             `dom-product-${index}`;
             
             // Find title
             let title = '';
-            const titleElement = element.querySelector('.product-title, .product-name, h1, h2, h3, .title');
-            if (titleElement) {
-              title = titleElement.textContent?.trim() || '';
+            const titleSelectors = [
+              '.product-title', '.product-name', 'h1', 'h2', 'h3', '.title', 
+              '[data-product-title]', '[itemprop="name"]'
+            ];
+            
+            for (const selector of titleSelectors) {
+              const titleElement = element.querySelector(selector);
+              if (titleElement && titleElement.textContent) {
+                title = titleElement.textContent.trim();
+                if (title) break;
+              }
+            }
+            
+            // If no title found with selectors, try the element itself
+            if (!title && element.textContent) {
+              const text = element.textContent.trim();
+              if (text.length > 0 && text.length < 100) {
+                title = text;
+              }
             }
             
             // Find price
             let price = 0;
-            const priceElement = element.querySelector('.price, .product-price, .money');
-            if (priceElement) {
-              const priceText = priceElement.textContent?.trim() || '';
-              const priceMatch = priceText.match(/[\d,.]+/);
-              if (priceMatch) {
-                price = parseFloat(priceMatch[0].replace(/,/g, ''));
+            const priceSelectors = [
+              '.price', '.product-price', '.money', '[data-price]', 
+              '.price-current', '[itemprop="price"]'
+            ];
+            
+            for (const selector of priceSelectors) {
+              const priceElement = element.querySelector(selector);
+              if (priceElement && priceElement.textContent) {
+                const priceText = priceElement.textContent.trim();
+                // Extract numbers from price text
+                const priceMatch = priceText.match(/[\d,.]+/);
+                if (priceMatch) {
+                  price = parseFloat(priceMatch[0].replace(/,/g, ''));
+                  if (price) break;
+                }
+              }
+            }
+            
+            // If no price found with selectors, try to find any number in the element
+            if (!price && element.textContent) {
+              const priceMatch = element.textContent.match(/\$\s?(\d+(\.\d{1,2})?)/);
+              if (priceMatch && priceMatch[1]) {
+                price = parseFloat(priceMatch[1]);
               }
             }
             
             // Find image
             let image = '';
-            const imageElement = element.querySelector('img');
-            if (imageElement) {
-              image = imageElement.getAttribute('src') || imageElement.getAttribute('data-src') || '';
+            const imgSelectors = [
+              'img', '[data-product-image] img', '.product-image img', 
+              '.product-img img', '[itemprop="image"]'
+            ];
+            
+            for (const selector of imgSelectors) {
+              const imgElement = element.querySelector(selector) as HTMLImageElement;
+              if (imgElement) {
+                image = imgElement.src || 
+                        imgElement.getAttribute('data-src') || 
+                        imgElement.getAttribute('data-lazy-src') || '';
+                if (image) break;
+              }
+            }
+            
+            // Find description
+            let description = '';
+            const descSelectors = [
+              '.product-description', '.description', '[itemprop="description"]'
+            ];
+            
+            for (const selector of descSelectors) {
+              const descElement = element.querySelector(selector);
+              if (descElement && descElement.textContent) {
+                description = descElement.textContent.trim();
+                if (description) break;
+              }
+            }
+            
+            // Default description if none found
+            if (!description) {
+              description = 'Product found on this page';
+            }
+            
+            // Find URL
+            let url = '';
+            const linkElement = element.querySelector('a[href]') as HTMLAnchorElement;
+            if (linkElement && linkElement.href) {
+              url = linkElement.href;
+            } else {
+              // Try to construct URL from current page
+              const handle = element.getAttribute('data-product-handle') || 
+                           title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '-');
+              url = `${window.location.origin}/products/${handle}`;
             }
             
             // Only add if we have at least title and price
@@ -87,14 +160,14 @@ export const ChatWidget: React.FC = () => {
               extractedProducts.push({
                 id: productId,
                 title,
-                description: 'Product found on this page',
+                description,
                 price,
                 currency: 'USD',
                 image,
                 category: 'General',
                 tags: ['extracted'],
                 availability: 'in_stock',
-                url: window.location.href
+                url
               });
             }
           });
@@ -130,17 +203,6 @@ export const ChatWidget: React.FC = () => {
     if (!foundProducts) {
       console.log('⚠️ No products found on page, using demo products');
       setProducts(demoProducts as Product[]);
-      
-      // If we're on a product page, add a message about not finding products
-      if (isProductPage) {
-        const systemMessage: ChatMessage = {
-          id: Date.now().toString(),
-          type: 'assistant',
-          content: "I couldn't find product information on this page. How can I help with your shopping today?",
-          timestamp: new Date()
-        };
-        setMessages([systemMessage]);
-      }
     }
     
     // Listen for Shopify parser results
@@ -167,6 +229,12 @@ export const ChatWidget: React.FC = () => {
 
     // Listen for Shopify parser events
     window.addEventListener('browseableAiProductsExtracted', handleShopifyProducts as EventListener);
+
+    // Check if products are already available (parser ran before widget loaded)
+    const existingProducts = (window as any).__browseableAiProducts;
+    if (existingProducts && existingProducts.length > 0) {
+      handleShopifyProducts({ detail: { products: existingProducts } } as CustomEvent);
+    }
 
     return () => {
       window.removeEventListener('browseableAiProductsExtracted', handleShopifyProducts as EventListener);
