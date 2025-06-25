@@ -55,7 +55,6 @@ export default defineConfig(({ mode }) => {
             chunkFileNames: 'chunks/[name]-[hash].js',
             assetFileNames: 'assets/[name]-[hash].[ext]',
             format: 'iife',
-            inlineDynamicImports: true, // Bundle everything into single files
           },
           external: [], // Don't externalize anything for extension
         },
