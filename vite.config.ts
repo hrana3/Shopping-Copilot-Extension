@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';

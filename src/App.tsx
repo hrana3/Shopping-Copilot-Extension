@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import React from 'react';
 import { ChatWidget } from './content/ChatWidget';
 

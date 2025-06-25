@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';

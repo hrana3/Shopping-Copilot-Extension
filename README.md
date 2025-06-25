@@ -1,5 +1,7 @@
 # Browseable.ai - AI Shopping Co-Pilot
 
+> Version: 1.0.1 - Updated for GitHub tracking
+
 An intelligent Chrome extension that serves as your personal shopping assistant, overlaying on any e-commerce site to provide AI-powered product recommendations, curation, and smart shopping features.
 
 ## 🎯 Vision

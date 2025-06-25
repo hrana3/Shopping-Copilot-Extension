@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import { Product, ChatMessage } from '../types/product';
 
 export class AIClient {

@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import { JSDOM } from 'jsdom';
 
 describe('extractProducts Function - Isolated Testing', () => {

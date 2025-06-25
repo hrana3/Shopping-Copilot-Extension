@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import { JSDOM } from 'jsdom';
 import { detectShopify, matchesShopifyPage, extractProducts } from '../src/content/shopifyParser';
 
@@ -51,7 +52,7 @@ describe('Shopify Parser - Comprehensive Tests', () => {
       const dom = new JSDOM(`
         <html>
           <head>
-            <script id="ShopifySettings">
+            <script id="ShopifySettings" type="text/javascript">
               window.Shopify = { shop: "test-shop" };
             </script>
           </head>

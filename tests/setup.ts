@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 // Jest setup file
 import 'jsdom/lib/jsdom/living/generated/utils';
 

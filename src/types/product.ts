@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 export interface Product {
   id: string;
   title: string;

@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 export function detectEcommerceSite(): {
   platform: string;
   isProductPage: boolean;

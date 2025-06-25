@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import React, { useState, useEffect } from 'react';
 import { ChatBubble } from '../components/ChatBubble';
 import { ChatDrawer } from '../components/ChatDrawer';

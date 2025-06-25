@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
 import { ProductCard } from './ProductCard';

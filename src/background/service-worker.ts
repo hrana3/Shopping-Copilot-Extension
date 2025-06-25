@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated for GitHub tracking
 // Background service worker for the Chrome extension
 console.log('Browseable.ai service worker loaded');
 
