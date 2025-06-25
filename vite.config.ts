@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       build: {
         outDir: 'dist',
-        emptyOutDir: true,
+        emptyOutDir: false, // Don't empty dist to preserve manifest and other files
         rollupOptions: {
           input: {
             'content-script': resolve(__dirname, 'src/content/content-script.tsx'),
@@ -17,15 +17,12 @@ export default defineConfig(({ mode }) => {
           },
           output: {
             entryFileNames: '[name].js',
-            chunkFileNames: '[name].js',
-            assetFileNames: '[name].[ext]',
-            format: 'iife',
-            inlineDynamicImports: false,
-            globals: {
-              'react': 'React',
-              'react-dom': 'ReactDOM'
-            }
-          }
+            chunkFileNames: 'chunks/[name]-[hash].js',
+            assetFileNames: 'assets/[name]-[hash].[ext]',
+            format: 'es',
+            // Remove conflicting options
+          },
+          external: ['chrome']
         },
         target: 'es2020',
         minify: false,
