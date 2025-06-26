@@ -137,7 +137,7 @@ function App() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mt-0.5">4</span>
-                  Click "Load unpacked\" and select the <code className=\"bg-blue-100 px-2 py-1 rounded text-sm">dist</code> folder
+                  Click "Load unpacked" and select the <code className="bg-blue-100 px-2 py-1 rounded text-sm">dist</code> folder
                 </li>
               </ol>
             </div>
