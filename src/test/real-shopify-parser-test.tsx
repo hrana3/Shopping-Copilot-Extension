@@ -26,19 +26,19 @@ interface RealTestResult {
 }
 
 export const RealShopifyParserTest: React.FC = () => {
-  const [testUrl, setTestUrl] = useState('');
+  const [testUrl, setTestUrl] = useState('https://www.gymshark.com/pages/shop-men');
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<RealTestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showRawData, setShowRawData] = useState(false);
 
   const quickTestSites = [
-    { name: 'Gymshark', url: 'https://gymshark.com/collections/all', category: 'Fitness Apparel' },
+    { name: 'Gymshark Men', url: 'https://www.gymshark.com/pages/shop-men', category: 'Fitness Apparel' },
+    { name: 'Gymshark Women', url: 'https://www.gymshark.com/pages/shop-women', category: 'Fitness Apparel' },
     { name: 'Allbirds', url: 'https://allbirds.com/collections/mens', category: 'Sustainable Shoes' },
     { name: 'Brooklinen', url: 'https://brooklinen.com/collections/sheet-sets', category: 'Home Goods' },
     { name: 'Warby Parker', url: 'https://warbyparker.com/eyeglasses/men', category: 'Eyewear' },
-    { name: 'Outdoor Voices', url: 'https://outdoorvoices.com/collections/womens', category: 'Activewear' },
-    { name: 'Everlane', url: 'https://everlane.com/collections/womens-sweaters', category: 'Sustainable Fashion' }
+    { name: 'Outdoor Voices', url: 'https://outdoorvoices.com/collections/womens', category: 'Activewear' }
   ];
 
   // Multiple CORS proxy services for fallback
@@ -134,6 +134,38 @@ export const RealShopifyParserTest: React.FC = () => {
     throw new Error(`All CORS proxies failed:\n${errors.join('\n')}`);
   };
 
+  // Enhanced price extraction function
+  const extractPrice = (text: string): number | undefined => {
+    try {
+      // Handle different currency formats
+      const cleanText = text.replace(/[^\d.,£$€¥]/g, '');
+      
+      // Handle comma as thousands separator vs decimal separator
+      let price: number;
+      if (cleanText.includes('.') && cleanText.includes(',')) {
+        // Both comma and dot - assume comma is thousands separator
+        price = parseFloat(cleanText.replace(/,/g, ''));
+      } else if (cleanText.includes(',') && !cleanText.includes('.')) {
+        // Only comma - could be decimal separator (European) or thousands
+        const parts = cleanText.split(',');
+        if (parts.length === 2 && parts[1].length <= 2) {
+          // Likely decimal separator
+          price = parseFloat(cleanText.replace(',', '.'));
+        } else {
+          // Likely thousands separator
+          price = parseFloat(cleanText.replace(/,/g, ''));
+        }
+      } else {
+        // Standard format
+        price = parseFloat(cleanText);
+      }
+      
+      return isNaN(price) ? undefined : price;
+    } catch (error) {
+      return undefined;
+    }
+  };
+
   // Function to test a URL by fetching it and analyzing the content
   const runRealTest = async (url: string): Promise<RealTestResult> => {
     try {
@@ -160,12 +192,18 @@ export const RealShopifyParserTest: React.FC = () => {
       const hasShopifyMeta = doc.querySelector('meta[name="shopify-checkout-api-token"]') !== null;
       const hasShopifyScript = doc.querySelector('script#ShopifySettings') !== null;
       const hasShopifyInUrl = url.includes('shopify') || url.includes('myshopify');
+      const hasShopifyPatterns = htmlContent.includes('cdn.shopify.com') || 
+                                htmlContent.includes('shopify-section') ||
+                                htmlContent.includes('Shopify.theme');
       
-      const isShopify = hasShopifyAnalytics || hasWindowSt || hasShopifyMeta || hasShopifyScript || hasShopifyInUrl;
+      const isShopify = hasShopifyAnalytics || hasWindowSt || hasShopifyMeta || hasShopifyScript || hasShopifyInUrl || hasShopifyPatterns;
       
       // Test page pattern matching
       const pathname = new URL(url).pathname;
-      const matchesPage = pathname.includes('/collections/') || pathname.includes('/products/') || pathname.includes('/product/');
+      const matchesPage = pathname.includes('/collections/') || 
+                         pathname.includes('/products/') || 
+                         pathname.includes('/product/') ||
+                         pathname.includes('/pages/shop');
       
       // Extract JSON-LD data
       const jsonLdScripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
@@ -186,27 +224,107 @@ export const RealShopifyParserTest: React.FC = () => {
         }
       });
       
-      // Extract DOM product elements
+      // Enhanced DOM product extraction for Gymshark and similar sites
       const productSelectors = [
         '[data-product-id]',
-        '.product',
-        '.product-item',
         '.product-card',
-        '[data-product]',
-        '[data-product-handle]'
+        '.product-tile',
+        '.product-item',
+        '.product',
+        '.product-grid-item',
+        '.product-list-item',
+        '.product-block',
+        '.product-container',
+        '.product-wrapper',
+        '.product-card-wrapper',
+        '.product-grid-card',
+        '.product-listing-item',
+        '[data-testid*="product"]',
+        '[class*="product"]',
+        '[id*="product"]'
       ];
       
       let domElements = 0;
+      let domProducts: any[] = [];
+      
       productSelectors.forEach(selector => {
-        domElements += doc.querySelectorAll(selector).length;
+        try {
+          const elements = doc.querySelectorAll(selector);
+          domElements += elements.length;
+          
+          // Try to extract actual product data from DOM
+          elements.forEach((element, index) => {
+            if (index >= 20) return; // Limit for performance
+            
+            try {
+              // Extract title
+              let title = '';
+              const titleSelectors = [
+                '.product-title', '.product-name', 'h1', 'h2', 'h3', 'h4',
+                '[data-testid*="title"]', '[data-testid*="name"]'
+              ];
+              
+              for (const titleSel of titleSelectors) {
+                const titleEl = element.querySelector(titleSel);
+                if (titleEl?.textContent?.trim()) {
+                  const candidateTitle = titleEl.textContent.trim();
+                  if (candidateTitle.length > 3 && candidateTitle.length < 200) {
+                    title = candidateTitle;
+                    break;
+                  }
+                }
+              }
+              
+              // Extract price
+              let price: number | undefined;
+              const priceSelectors = [
+                '.price', '.product-price', '[data-price]', '[data-testid*="price"]'
+              ];
+              
+              for (const priceSel of priceSelectors) {
+                const priceEl = element.querySelector(priceSel);
+                if (priceEl?.textContent) {
+                  price = extractPrice(priceEl.textContent);
+                  if (price && price > 0) break;
+                }
+              }
+              
+              // Extract image
+              let image = '';
+              const imgEl = element.querySelector('img') as HTMLImageElement;
+              if (imgEl?.src && !imgEl.src.includes('placeholder')) {
+                image = imgEl.src;
+              }
+              
+              if (title) {
+                domProducts.push({
+                  id: `dom-${index}`,
+                  title,
+                  price: price || 0,
+                  image,
+                  source: 'dom'
+                });
+              }
+            } catch (e) {
+              console.warn('Error extracting DOM product:', e);
+            }
+          });
+        } catch (e) {
+          console.warn(`Error with selector ${selector}:`, e);
+        }
       });
       
       // Try to extract ShopifyAnalytics data from script content
       let shopifyAnalyticsData = null;
-      const analyticsMatch = htmlContent.match(/ShopifyAnalytics\.meta\s*=\s*({[^}]+})/);
-      if (analyticsMatch) {
+      const analyticsMatches = htmlContent.match(/ShopifyAnalytics\.meta\s*=\s*({[^}]+})/g);
+      if (analyticsMatches) {
         try {
-          shopifyAnalyticsData = JSON.parse(analyticsMatch[1]);
+          // Try to parse the most complete match
+          const bestMatch = analyticsMatches.sort((a, b) => b.length - a.length)[0];
+          const jsonStr = bestMatch.match(/{[^}]+}/)?.[0];
+          if (jsonStr) {
+            shopifyAnalyticsData = JSON.parse(jsonStr);
+          }
         } catch (e) {
           console.warn('Failed to parse ShopifyAnalytics data:', e);
         }
@@ -214,10 +332,14 @@ export const RealShopifyParserTest: React.FC = () => {
       
       // Try to extract window.__st data
       let windowStData = null;
-      const stMatch = htmlContent.match(/window\.__st\s*=\s*({[^}]+})/);
-      if (stMatch) {
+      const stMatches = htmlContent.match(/window\.__st\s*=\s*({[^}]+})/g);
+      if (stMatches) {
         try {
-          windowStData = JSON.parse(stMatch[1]);
+          const bestMatch = stMatches.sort((a, b) => b.length - a.length)[0];
+          const jsonStr = bestMatch.match(/{[^}]+}/)?.[0];
+          if (jsonStr) {
+            windowStData = JSON.parse(jsonStr);
+          }
         } catch (e) {
           console.warn('Failed to parse window.__st data:', e);
         }
@@ -286,10 +408,23 @@ export const RealShopifyParserTest: React.FC = () => {
         });
       }
       // Try DOM extraction as fallback
-      else if (domElements > 0) {
+      else if (domProducts.length > 0) {
         extractionMethod = 'DOM';
-        // This would require more complex DOM parsing
-        // For now, we'll indicate that DOM elements were found but not extracted
+        domProducts.forEach(p => {
+          products.push({
+            id: p.id,
+            title: p.title,
+            description: `${p.title} - Found on ${new URL(url).hostname}`,
+            price: p.price,
+            currency: 'USD',
+            image: p.image || '',
+            brand: new URL(url).hostname.includes('gymshark') ? 'Gymshark' : undefined,
+            category: 'General',
+            tags: ['extracted'],
+            availability: 'in_stock',
+            url: url
+          });
+        });
       }
       
       const result: RealTestResult = {
@@ -308,7 +443,8 @@ export const RealShopifyParserTest: React.FC = () => {
           rawData: {
             shopifyAnalyticsData,
             windowStData,
-            jsonLdProducts: jsonLdProducts.slice(0, 2) // Limit for display
+            jsonLdProducts: jsonLdProducts.slice(0, 2), // Limit for display
+            domProducts: domProducts.slice(0, 5) // Show first 5 DOM products
           }
         },
         pageContent
@@ -363,11 +499,11 @@ export const RealShopifyParserTest: React.FC = () => {
             <TestTube className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900">
-            Real Shopify Parser Test
+            Real Product Parser Test
           </h1>
         </div>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          Test the actual Shopify parser on real websites. This tool fetches live pages and runs 
+          Test the actual product parser on real websites. This tool fetches live pages and runs 
           the same extraction logic used in the Chrome extension.
         </p>
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -390,7 +526,7 @@ export const RealShopifyParserTest: React.FC = () => {
             type="url"
             value={testUrl}
             onChange={(e) => setTestUrl(e.target.value)}
-            placeholder="Enter Shopify store URL (e.g., https://gymshark.com/collections/all)"
+            placeholder="Enter e-commerce site URL"
             className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
           <button
