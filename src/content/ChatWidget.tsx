@@ -20,36 +20,45 @@ export const ChatWidget: React.FC = () => {
     const extractProductsFromPage = () => {
       console.log('🔍 Attempting to extract products from page...');
       
-      // Check for Shopify products first (set by shopifyParser)
-      const shopifyProducts = (window as any).__browseableAiProducts;
-      if (shopifyProducts && shopifyProducts.length > 0) {
-        console.log('✅ Found Shopify products:', shopifyProducts.length);
-        setProducts(shopifyProducts);
+      // Check for products set by shopifyParser
+      const extractedProducts = (window as any).__browseableAiProducts;
+      if (extractedProducts && extractedProducts.length > 0) {
+        console.log('✅ Found extracted products:', extractedProducts.length);
+        setProducts(extractedProducts);
         setHasRealProducts(true);
         
         // Add a system message about finding products
         const systemMessage: ChatMessage = {
           id: Date.now().toString(),
           type: 'assistant',
-          content: `I found ${shopifyProducts.length} products on this page! I can help you explore them or find similar items.`,
+          content: `I found ${extractedProducts.length} products on this page! I can help you explore them or find similar items. What are you looking for today?`,
           timestamp: new Date(),
-          products: shopifyProducts.slice(0, 3) // Show first 3 as preview
+          products: extractedProducts.slice(0, 3) // Show first 3 as preview
         };
         setMessages([systemMessage]);
         return true;
       }
       
-      // Try to extract products from the page using DOM
+      // Try to extract products from the page using DOM as fallback
       try {
         // Look for product elements
-        const productElements = document.querySelectorAll('[data-product-id], .product, .product-item, .product-card, [data-product-handle], [data-product]');
+        const productElements = document.querySelectorAll([
+          '[data-product-id]',
+          '.product',
+          '.product-item',
+          '.product-card',
+          '[data-product-handle]',
+          '[data-product]',
+          '[itemtype*="Product"]'
+        ].join(','));
+        
         if (productElements.length > 0) {
           console.log('✅ Found product elements:', productElements.length);
           
           const extractedProducts: Product[] = [];
           
           productElements.forEach((element, index) => {
-            if (index >= 10) return; // Limit to 10 products
+            if (index >= 20) return; // Limit to 20 products
             
             // Try to extract product info
             const productId = element.getAttribute('data-product-id') || 
@@ -156,7 +165,7 @@ export const ChatWidget: React.FC = () => {
               url = `${window.location.origin}/products/${handle}`;
             }
             
-            // Only add if we have at least title and price
+            // Only add if we have at least title
             if (title) {
               extractedProducts.push({
                 id: String(productId),
@@ -197,7 +206,7 @@ export const ChatWidget: React.FC = () => {
       return false;
     };
     
-    // Try to extract products
+    // Try to extract products immediately
     const foundProducts = extractProductsFromPage();
     
     // If we couldn't find products, use demo products
@@ -206,41 +215,50 @@ export const ChatWidget: React.FC = () => {
       setProducts(demoProducts as Product[]);
     }
     
-    // Listen for Shopify parser results
-    const handleShopifyProducts = (event: CustomEvent) => {
-      const { products: shopifyProducts } = event.detail;
-      console.log('📦 Received Shopify products:', shopifyProducts);
+    // Listen for product extraction events
+    const handleProductsExtracted = (event: CustomEvent) => {
+      const { products: extractedProducts } = event.detail;
+      console.log('📦 Received extracted products:', extractedProducts);
       
-      if (shopifyProducts && shopifyProducts.length > 0) {
-        // Replace demo products with real Shopify products
-        setProducts(shopifyProducts);
+      if (extractedProducts && extractedProducts.length > 0) {
+        // Replace demo products with real extracted products
+        setProducts(extractedProducts);
         setHasRealProducts(true);
         
         // Add a system message about finding products
         const systemMessage: ChatMessage = {
           id: Date.now().toString(),
           type: 'assistant',
-          content: `I found ${shopifyProducts.length} products on this page! I can help you explore them or find similar items.`,
+          content: `I found ${extractedProducts.length} products on this page! I can help you explore them or find similar items.`,
           timestamp: new Date(),
-          products: shopifyProducts.slice(0, 3) // Show first 3 as preview
+          products: extractedProducts.slice(0, 3) // Show first 3 as preview
         };
         setMessages(prev => prev.length === 0 ? [systemMessage] : prev);
       }
     };
 
-    // Listen for Shopify parser events
-    window.addEventListener('browseableAiProductsExtracted', handleShopifyProducts as EventListener);
+    // Listen for product extraction events
+    window.addEventListener('browseableAiProductsExtracted', handleProductsExtracted as EventListener);
 
     // Check if products are already available (parser ran before widget loaded)
     const existingProducts = (window as any).__browseableAiProducts;
     if (existingProducts && existingProducts.length > 0) {
-      handleShopifyProducts({ detail: { products: existingProducts } } as CustomEvent);
+      handleProductsExtracted({ detail: { products: existingProducts } } as CustomEvent);
     }
 
+    // Retry extraction after a delay for dynamic content
+    const retryTimeout = setTimeout(() => {
+      if (!hasRealProducts) {
+        console.log('🔄 Retrying product extraction...');
+        extractProductsFromPage();
+      }
+    }, 2000);
+
     return () => {
-      window.removeEventListener('browseableAiProductsExtracted', handleShopifyProducts as EventListener);
+      window.removeEventListener('browseableAiProductsExtracted', handleProductsExtracted as EventListener);
+      clearTimeout(retryTimeout);
     };
-  }, []);
+  }, [hasRealProducts]);
 
   const handleOpenDrawer = () => {
     setIsDrawerOpen(true);
