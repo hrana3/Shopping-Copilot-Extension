@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TestTube, Globe, Search, Package, AlertCircle, CheckCircle, XCircle, ExternalLink, RefreshCw, Code, Eye } from 'lucide-react';
+import { TestTube, Globe, Search, Package, AlertCircle, CheckCircle, XCircle, ExternalLink, RefreshCw, Code, Eye, Info } from 'lucide-react';
 import { Product } from '../types/product';
 
 interface RealTestResult {
@@ -31,6 +31,7 @@ export const RealShopifyParserTest: React.FC = () => {
   const [testResult, setTestResult] = useState<RealTestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showRawData, setShowRawData] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const quickTestSites = [
     { name: 'Gymshark Men', url: 'https://www.gymshark.com/pages/shop-men', category: 'Fitness Apparel' },
@@ -41,31 +42,51 @@ export const RealShopifyParserTest: React.FC = () => {
     { name: 'Outdoor Voices', url: 'https://outdoorvoices.com/collections/womens', category: 'Activewear' }
   ];
 
-  // Multiple CORS proxy services for fallback
+  // Enhanced CORS proxy services with better reliability
   const corsProxies = [
     {
       name: 'AllOrigins',
       url: (targetUrl: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-      extractContent: (data: any) => data.contents
-    },
-    {
-      name: 'CORS Anywhere (Heroku)',
-      url: (targetUrl: string) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
-      extractContent: (data: any) => data
-    },
-    {
-      name: 'ThingProxy',
-      url: (targetUrl: string) => `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
-      extractContent: (data: any) => data
+      extractContent: (data: any) => {
+        if (typeof data === 'string') {
+          try {
+            const parsed = JSON.parse(data);
+            return parsed.contents || data;
+          } catch {
+            return data;
+          }
+        }
+        return data.contents || data;
+      },
+      timeout: 15000
     },
     {
       name: 'CORS.SH',
       url: (targetUrl: string) => `https://cors.sh/${targetUrl}`,
-      extractContent: (data: any) => data
+      extractContent: (data: any) => data,
+      timeout: 12000
+    },
+    {
+      name: 'Proxy6 CORS',
+      url: (targetUrl: string) => `https://proxy6.workers.dev/?url=${encodeURIComponent(targetUrl)}`,
+      extractContent: (data: any) => data,
+      timeout: 10000
+    },
+    {
+      name: 'ThingProxy',
+      url: (targetUrl: string) => `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
+      extractContent: (data: any) => data,
+      timeout: 8000
+    },
+    {
+      name: 'CORS Anywhere (Heroku)',
+      url: (targetUrl: string) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
+      extractContent: (data: any) => data,
+      timeout: 10000
     }
   ];
 
-  // Function to fetch with timeout
+  // Function to fetch with timeout and better error handling
   const fetchWithTimeout = async (url: string, timeout = 10000): Promise<Response> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -74,27 +95,39 @@ export const RealShopifyParserTest: React.FC = () => {
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1'
         }
       });
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
       clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request timed out after ${timeout}ms`);
+      }
       throw error;
     }
   };
 
-  // Function to try multiple CORS proxies
+  // Function to try multiple CORS proxies with enhanced error handling
   const fetchWithFallback = async (targetUrl: string): Promise<{ content: string; proxyUsed: string }> => {
     const errors: string[] = [];
     
-    for (const proxy of corsProxies) {
+    // Shuffle proxies to distribute load
+    const shuffledProxies = [...corsProxies].sort(() => Math.random() - 0.5);
+    
+    for (const proxy of shuffledProxies) {
       try {
         console.log(`🔄 Trying ${proxy.name} proxy...`);
         const proxyUrl = proxy.url(targetUrl);
         
-        const response = await fetchWithTimeout(proxyUrl, 15000);
+        const response = await fetchWithTimeout(proxyUrl, proxy.timeout);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -104,34 +137,38 @@ export const RealShopifyParserTest: React.FC = () => {
         let content: string;
         
         // Handle different proxy response formats
-        if (proxy.name === 'AllOrigins') {
-          try {
-            const jsonData = JSON.parse(data);
-            content = proxy.extractContent(jsonData);
-          } catch {
-            content = data; // Fallback to raw data if JSON parsing fails
-          }
-        } else {
+        try {
           content = proxy.extractContent(data);
+        } catch (extractError) {
+          // If extraction fails, use raw data
+          content = data;
         }
         
         if (!content || content.length < 100) {
           throw new Error('Received empty or too short content');
         }
         
-        console.log(`✅ Successfully fetched via ${proxy.name}`);
+        // Basic validation that we got HTML content
+        if (!content.includes('<html') && !content.includes('<HTML') && !content.includes('<!DOCTYPE')) {
+          throw new Error('Response does not appear to be HTML content');
+        }
+        
+        console.log(`✅ Successfully fetched via ${proxy.name} (${content.length} chars)`);
         return { content, proxyUsed: proxy.name };
         
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         errors.push(`${proxy.name}: ${errorMsg}`);
         console.warn(`❌ ${proxy.name} failed:`, errorMsg);
+        
+        // Add small delay between proxy attempts to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
         continue;
       }
     }
     
     // If all proxies fail, throw an error with details
-    throw new Error(`All CORS proxies failed:\n${errors.join('\n')}`);
+    throw new Error(`All CORS proxies failed. This is common with public proxies.\n\nErrors:\n${errors.join('\n')}\n\nFor reliable testing, use the actual Chrome extension instead.`);
   };
 
   // Enhanced price extraction function
@@ -481,6 +518,7 @@ export const RealShopifyParserTest: React.FC = () => {
     try {
       const result = await runRealTest(targetUrl);
       setTestResult(result);
+      setRetryCount(0); // Reset retry count on success
       if (url) setTestUrl(url); // Update input if using quick test
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Test failed';
@@ -489,6 +527,11 @@ export const RealShopifyParserTest: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const retryTest = () => {
+    setRetryCount(prev => prev + 1);
+    runTest();
   };
 
   return (
@@ -506,11 +549,30 @@ export const RealShopifyParserTest: React.FC = () => {
           Test the actual product parser on real websites. This tool fetches live pages and runs 
           the same extraction logic used in the Chrome extension.
         </p>
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> This test uses multiple CORS proxy services with automatic fallback. 
-            Some sites may block proxies or return different content than what the extension would see.
-          </p>
+        
+        {/* Important Notice */}
+        <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-4xl mx-auto">
+          <div className="flex items-start gap-3">
+            <Info className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-2">Important: CORS Proxy Limitations</h3>
+              <div className="text-sm text-blue-800 space-y-2">
+                <p>
+                  This test uses public CORS proxy services which are often unreliable. They may be:
+                </p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>Rate-limited or temporarily unavailable</li>
+                  <li>Blocked by target websites</li>
+                  <li>Return different content than what browsers see</li>
+                </ul>
+                <p className="font-medium">
+                  <strong>For reliable testing:</strong> Use the actual Chrome extension by building it 
+                  (<code className="bg-blue-100 px-1 rounded">npm run build:extension</code>) and loading it 
+                  in Chrome via <code className="bg-blue-100 px-1 rounded">chrome://extensions/</code>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -569,26 +631,45 @@ export const RealShopifyParserTest: React.FC = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2 text-red-800">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center gap-2 text-red-800 mb-3">
             <AlertCircle className="w-5 h-5" />
-            <span className="font-medium">Test Error</span>
+            <span className="font-medium">Test Failed</span>
           </div>
-          <div className="text-red-700 mt-1">
-            <p className="font-medium">Failed to fetch the webpage</p>
+          
+          <div className="text-red-700 mb-4">
+            <p className="font-medium">Unable to fetch the webpage</p>
             <details className="mt-2">
               <summary className="cursor-pointer text-sm hover:underline">Show error details</summary>
-              <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto whitespace-pre-wrap">
+              <pre className="mt-2 text-xs bg-red-100 p-3 rounded overflow-auto whitespace-pre-wrap max-h-40">
                 {error}
               </pre>
             </details>
-            <p className="text-sm mt-2">
-              This usually happens when:
-              <br />• The website blocks CORS proxy requests
-              <br />• The proxy services are temporarily unavailable
-              <br />• The target website is down or unreachable
-              <br />• Network connectivity issues
-            </p>
+          </div>
+
+          <div className="bg-red-100 p-4 rounded-lg mb-4">
+            <h4 className="font-medium text-red-900 mb-2">Common Causes:</h4>
+            <ul className="text-sm text-red-800 space-y-1">
+              <li>• Public CORS proxies are rate-limited or blocked</li>
+              <li>• Target website blocks proxy requests</li>
+              <li>• Proxy services are temporarily unavailable</li>
+              <li>• Network connectivity issues</li>
+            </ul>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={retryTest}
+              disabled={isLoading}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry Test {retryCount > 0 && `(${retryCount})`}
+            </button>
+            
+            <div className="text-sm text-red-700 flex items-center">
+              <strong>Recommended:</strong> Use the Chrome extension for reliable testing
+            </div>
           </div>
         </div>
       )}
@@ -596,6 +677,17 @@ export const RealShopifyParserTest: React.FC = () => {
       {/* Test Results */}
       {testResult && (
         <div className="space-y-6">
+          {/* Success Banner */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-green-800">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">Test Completed Successfully</span>
+              <span className="text-sm text-green-600">
+                via {testResult.debugInfo.proxyUsed} proxy
+              </span>
+            </div>
+          </div>
+
           {/* Page Information */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Page Information</h2>
