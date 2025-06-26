@@ -15,6 +15,7 @@ interface RealTestResult {
     extractionMethod: string;
     errors: string[];
     rawData?: any;
+    proxyUsed?: string;
   };
   pageContent?: {
     title: string;
@@ -40,21 +41,106 @@ export const RealShopifyParserTest: React.FC = () => {
     { name: 'Everlane', url: 'https://everlane.com/collections/womens-sweaters', category: 'Sustainable Fashion' }
   ];
 
+  // Multiple CORS proxy services for fallback
+  const corsProxies = [
+    {
+      name: 'AllOrigins',
+      url: (targetUrl: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+      extractContent: (data: any) => data.contents
+    },
+    {
+      name: 'CORS Anywhere (Heroku)',
+      url: (targetUrl: string) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
+      extractContent: (data: any) => data
+    },
+    {
+      name: 'ThingProxy',
+      url: (targetUrl: string) => `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
+      extractContent: (data: any) => data
+    },
+    {
+      name: 'CORS.SH',
+      url: (targetUrl: string) => `https://cors.sh/${targetUrl}`,
+      extractContent: (data: any) => data
+    }
+  ];
+
+  // Function to fetch with timeout
+  const fetchWithTimeout = async (url: string, timeout = 10000): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  };
+
+  // Function to try multiple CORS proxies
+  const fetchWithFallback = async (targetUrl: string): Promise<{ content: string; proxyUsed: string }> => {
+    const errors: string[] = [];
+    
+    for (const proxy of corsProxies) {
+      try {
+        console.log(`🔄 Trying ${proxy.name} proxy...`);
+        const proxyUrl = proxy.url(targetUrl);
+        
+        const response = await fetchWithTimeout(proxyUrl, 15000);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.text();
+        let content: string;
+        
+        // Handle different proxy response formats
+        if (proxy.name === 'AllOrigins') {
+          try {
+            const jsonData = JSON.parse(data);
+            content = proxy.extractContent(jsonData);
+          } catch {
+            content = data; // Fallback to raw data if JSON parsing fails
+          }
+        } else {
+          content = proxy.extractContent(data);
+        }
+        
+        if (!content || content.length < 100) {
+          throw new Error('Received empty or too short content');
+        }
+        
+        console.log(`✅ Successfully fetched via ${proxy.name}`);
+        return { content, proxyUsed: proxy.name };
+        
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        errors.push(`${proxy.name}: ${errorMsg}`);
+        console.warn(`❌ ${proxy.name} failed:`, errorMsg);
+        continue;
+      }
+    }
+    
+    // If all proxies fail, throw an error with details
+    throw new Error(`All CORS proxies failed:\n${errors.join('\n')}`);
+  };
+
   // Function to test a URL by fetching it and analyzing the content
   const runRealTest = async (url: string): Promise<RealTestResult> => {
     try {
       console.log('🚀 Starting real test for:', url);
       
-      // Use a CORS proxy to fetch the page content
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      
-      const response = await fetch(proxyUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch page: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const htmlContent = data.contents;
+      // Try to fetch the page content with fallback proxies
+      const { content: htmlContent, proxyUsed } = await fetchWithFallback(url);
       
       // Create a temporary DOM to parse the HTML
       const parser = new DOMParser();
@@ -218,6 +304,7 @@ export const RealShopifyParserTest: React.FC = () => {
           domElements,
           extractionMethod,
           errors: [],
+          proxyUsed,
           rawData: {
             shopifyAnalyticsData,
             windowStData,
@@ -260,7 +347,9 @@ export const RealShopifyParserTest: React.FC = () => {
       setTestResult(result);
       if (url) setTestUrl(url); // Update input if using quick test
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Test failed');
+      const errorMessage = err instanceof Error ? err.message : 'Test failed';
+      setError(errorMessage);
+      console.error('Test error details:', err);
     } finally {
       setIsLoading(false);
     }
@@ -283,7 +372,8 @@ export const RealShopifyParserTest: React.FC = () => {
         </p>
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
-            <strong>Note:</strong> This test uses a CORS proxy to fetch pages. Some sites may block this or return different content than what the extension would see.
+            <strong>Note:</strong> This test uses multiple CORS proxy services with automatic fallback. 
+            Some sites may block proxies or return different content than what the extension would see.
           </p>
         </div>
       </div>
@@ -348,7 +438,22 @@ export const RealShopifyParserTest: React.FC = () => {
             <AlertCircle className="w-5 h-5" />
             <span className="font-medium">Test Error</span>
           </div>
-          <p className="text-red-700 mt-1">{error}</p>
+          <div className="text-red-700 mt-1">
+            <p className="font-medium">Failed to fetch the webpage</p>
+            <details className="mt-2">
+              <summary className="cursor-pointer text-sm hover:underline">Show error details</summary>
+              <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto whitespace-pre-wrap">
+                {error}
+              </pre>
+            </details>
+            <p className="text-sm mt-2">
+              This usually happens when:
+              <br />• The website blocks CORS proxy requests
+              <br />• The proxy services are temporarily unavailable
+              <br />• The target website is down or unreachable
+              <br />• Network connectivity issues
+            </p>
+          </div>
         </div>
       )}
 
@@ -373,6 +478,9 @@ export const RealShopifyParserTest: React.FC = () => {
                   <div><strong>Scripts Found:</strong> {testResult.pageContent?.scripts.length || 0}</div>
                   <div><strong>Meta Tags:</strong> {testResult.pageContent?.metas.length || 0}</div>
                   <div><strong>Extraction Method:</strong> <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">{testResult.debugInfo.extractionMethod}</span></div>
+                  {testResult.debugInfo.proxyUsed && (
+                    <div><strong>Proxy Used:</strong> <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">{testResult.debugInfo.proxyUsed}</span></div>
+                  )}
                 </div>
               </div>
             </div>
