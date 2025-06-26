@@ -1,8 +1,8 @@
 // Version: 1.0.1 - Updated for GitHub tracking
 import React, { useState } from 'react';
 import { ChatWidget } from './content/ChatWidget';
-import { ShopifyParserTest } from './test/shopify-parser-test';
-import { TestTube, MessageCircle, Code } from 'lucide-react';
+import { RealShopifyParserTest } from './test/real-shopify-parser-test';
+import { TestTube, MessageCircle, Code, Zap } from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState<'preview' | 'test' | 'extension'>('preview');
@@ -28,18 +28,18 @@ function App() {
               onClick={() => setActiveTab('test')}
               className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'test'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-green-500 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <TestTube size={18} />
-              Shopify Parser Test
+              <Zap size={18} />
+              Real Parser Test
             </button>
             <button
               onClick={() => setActiveTab('extension')}
               className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'extension'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -109,7 +109,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === 'test' && <ShopifyParserTest />}
+        {activeTab === 'test' && <RealShopifyParserTest />}
 
         {activeTab === 'extension' && (
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
