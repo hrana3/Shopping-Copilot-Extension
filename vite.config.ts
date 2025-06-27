@@ -14,8 +14,7 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           input: {
             'content-script': resolve(__dirname, 'src/content/content-script.tsx'),
-            'service-worker': resolve(__dirname, 'src/background/service-worker.ts'),
-            'popup': resolve(__dirname, 'public/popup.js')
+            'service-worker': resolve(__dirname, 'src/background/service-worker.ts')
           },
           output: {
             entryFileNames: '[name].js',
