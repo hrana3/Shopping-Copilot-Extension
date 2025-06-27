@@ -13,12 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
                          url.pathname.includes('/shop');
       
       const statusEl = document.querySelector('.status');
-      if (isSupported) {
-        statusEl.textContent = '✅ Active on this site';
-        statusEl.classList.add('active');
-      } else {
-        statusEl.textContent = '⚠️ Navigate to an e-commerce site to use';
-        statusEl.classList.remove('active');
+      if (statusEl) {
+        if (isSupported) {
+          statusEl.textContent = '✅ Active on this site';
+          statusEl.classList.add('active');
+        } else {
+          statusEl.textContent = '⚠️ Navigate to an e-commerce site to use';
+          statusEl.classList.remove('active');
+        }
       }
     }
   });
