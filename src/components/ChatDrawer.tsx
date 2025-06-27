@@ -97,40 +97,40 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       <div className="browseable-chat-backdrop" onClick={onClose} />
       
       {/* Drawer */}
-      <div className="browseable-chat-drawer">
+      <div className="browseable-chat-drawer browseable-slide-in">
         {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '24px',
+          padding: '16px',
           borderBottom: '1px solid #f1f5f9',
           background: 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '44px',
-              height: '44px',
+              width: '36px',
+              height: '36px',
               background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              borderRadius: '14px',
+              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+              boxShadow: '0 4px 6px rgba(139, 92, 246, 0.2)'
             }}>
-              <Sparkles size={22} color="white" />
+              <Sparkles size={18} color="white" />
             </div>
             <div>
               <h2 style={{
-                fontSize: '20px',
+                fontSize: '18px',
                 fontWeight: '700',
                 color: '#0f172a',
                 margin: '0',
                 lineHeight: '1.2',
                 letterSpacing: '-0.025em'
-              }}>Browseable.ai</h2>
+              }}>BROWSEABLE.AI</h2>
               <p style={{
-                fontSize: '13px',
+                fontSize: '12px',
                 color: '#64748b',
                 margin: '0',
                 lineHeight: '1.2',
@@ -141,10 +141,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           <button
             onClick={onClose}
             style={{
-              padding: '10px',
+              padding: '8px',
               background: 'transparent',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex',
@@ -152,7 +152,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               justifyContent: 'center'
             }}
           >
-            <X size={18} color="#64748b" />
+            <X size={16} color="#64748b" />
           </button>
         </div>
 
@@ -162,52 +162,52 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           style={{
             flex: '1',
             overflowY: 'auto',
-            padding: '20px 24px',
+            padding: '16px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '12px'
           }}
         >
           {messages.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ textAlign: 'center', padding: '30px 16px' }}>
               <div style={{
-                width: '56px',
-                height: '56px',
+                width: '48px',
+                height: '48px',
                 background: 'linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%)',
-                borderRadius: '18px',
+                borderRadius: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 20px'
+                margin: '0 auto 16px'
               }}>
-                <ShoppingBag size={28} color="#8b5cf6" />
+                <ShoppingBag size={24} color="#8b5cf6" />
               </div>
               <h3 style={{
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: '700',
                 color: '#0f172a',
-                margin: '0 0 12px',
+                margin: '0 0 8px',
                 lineHeight: '1.3',
                 letterSpacing: '-0.025em'
               }}>
                 Welcome to your AI Shopping Assistant!
               </h3>
               <p style={{
-                fontSize: '15px',
+                fontSize: '14px',
                 color: '#64748b',
-                margin: '0 0 24px',
+                margin: '0 0 20px',
                 lineHeight: '1.5',
                 fontWeight: '400'
               }}>
                 I'll help you find the perfect products based on your style and preferences.
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '600',
                   color: '#374151',
-                  margin: '0 0 12px'
+                  margin: '0 0 8px'
                 }}>Try asking me:</p>
                 {suggestedQueries.map((query, index) => (
                   <button
@@ -216,11 +216,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     style={{
                       width: '100%',
                       textAlign: 'left',
-                      padding: '14px 16px',
+                      padding: '12px 14px',
                       background: '#f8fafc',
                       border: '1px solid #e2e8f0',
-                      borderRadius: '14px',
-                      fontSize: '13px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
                       color: '#374151',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
@@ -239,21 +239,21 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 <div key={message.id} style={{
                   display: 'flex',
                   justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: '16px'
+                  marginBottom: '12px'
                 }}>
                   <div style={{
                     maxWidth: '85%',
-                    padding: '14px 18px',
-                    borderRadius: '18px',
+                    padding: '12px 16px',
+                    borderRadius: '16px',
                     background: message.type === 'user' 
                       ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' 
                       : '#f8fafc',
                     color: message.type === 'user' ? 'white' : '#0f172a',
-                    borderBottomRightRadius: message.type === 'user' ? '6px' : '18px',
-                    borderBottomLeftRadius: message.type === 'user' ? '18px' : '6px',
+                    borderBottomRightRadius: message.type === 'user' ? '4px' : '16px',
+                    borderBottomLeftRadius: message.type === 'user' ? '16px' : '4px',
                     boxShadow: message.type === 'user' 
-                      ? '0 4px 12px rgba(139, 92, 246, 0.3)' 
-                      : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                      ? '0 4px 6px rgba(139, 92, 246, 0.2)' 
+                      : '0 2px 4px rgba(0, 0, 0, 0.05)',
                     border: message.type === 'user' ? 'none' : '1px solid #e2e8f0'
                   }}>
                     <p style={{
@@ -268,17 +268,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               
               {/* Products Grid */}
               {validProducts.length > 0 && (
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '16px' }}>
                   <h3 style={{
-                    fontSize: '16px',
+                    fontSize: '15px',
                     fontWeight: '700',
                     color: '#0f172a',
-                    margin: '0 0 16px',
+                    margin: '0 0 12px',
                     letterSpacing: '-0.025em'
                   }}>
-                    Recommended Products
+                    RECOMMENDED PRODUCTS
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {validProducts.slice(0, 4).map((product) => (
                       <ProductCard
                         key={product.id}
@@ -298,12 +298,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <div style={{
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
-                borderRadius: '18px',
-                borderBottomLeftRadius: '6px',
-                padding: '14px 18px',
+                borderRadius: '16px',
+                borderBottomLeftRadius: '4px',
+                padding: '12px 16px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px'
+                gap: '8px'
               }}>
                 <Loader2 size={14} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
                 <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>AI is thinking...</span>
@@ -317,10 +317,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         {/* Input Area */}
         <div style={{
           borderTop: '1px solid #f1f5f9',
-          padding: '20px 24px 24px 24px',
+          padding: '16px',
           background: '#fafbfc'
         }}>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '12px' }}>
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px' }}>
             <input
               ref={inputRef}
               type="text"
@@ -329,9 +329,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               placeholder="Ask me about products, styles, or recommendations..."
               style={{
                 flex: '1',
-                padding: '14px 18px',
+                padding: '12px 16px',
                 border: '1px solid #e2e8f0',
-                borderRadius: '16px',
+                borderRadius: '12px',
                 fontSize: '14px',
                 outline: 'none',
                 transition: 'all 0.2s ease',
@@ -344,13 +344,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
               style={{
-                padding: '14px 20px',
+                padding: '12px 16px',
                 background: inputMessage.trim() && !isLoading 
                   ? 'linear-gradient(135deg, #8b5cf6 0%,  #7c3aed 100%)' 
                   : '#cbd5e1',
                 color: 'white',
                 border: 'none',
-                borderRadius: '16px',
+                borderRadius: '12px',
                 cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
                 transition: 'all 0.2s ease',
                 display: 'flex',
@@ -359,7 +359,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 fontWeight: '600',
                 fontSize: '14px',
                 boxShadow: inputMessage.trim() && !isLoading 
-                  ? '0 4px 12px rgba(139, 92, 246, 0.3)' 
+                  ? '0 4px 6px rgba(139, 92, 246, 0.2)' 
                   : 'none'
               }}
             >

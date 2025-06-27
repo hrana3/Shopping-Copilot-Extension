@@ -1,4 +1,3 @@
-// Version: 1.0.1 - Updated for GitHub tracking
 import React from 'react';
 import { MessageCircle, Sparkles } from 'lucide-react';
 
@@ -18,7 +17,27 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   return (
     <button
       onClick={onClick}
-      className="browseable-chat-bubble"
+      className="browseable-chat-bubble browseable-fade-in"
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        width: '56px',
+        height: '56px',
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+        borderRadius: '50%',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2147483647,
+        pointerEvents: 'auto',
+        border: 'none',
+        color: 'white',
+        outline: 'none'
+      }}
     >
       <div style={{ position: 'relative' }}>
         <MessageCircle size={24} color="white" />
