@@ -67,13 +67,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     : 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=800';
 
   // Ensure title is not too long
-  const title = product.title.length > 50 
-    ? product.title.substring(0, 50) + '...' 
+  const title = product.title.length > 40 
+    ? product.title.substring(0, 40) + '...' 
     : product.title;
 
   // Ensure description is not too long
-  const description = product.description && product.description.length > 100
-    ? product.description.substring(0, 100) + '...'
+  const description = product.description && product.description.length > 80
+    ? product.description.substring(0, 80) + '...'
     : product.description;
 
   return (
@@ -81,19 +81,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       className="browseable-product-card"
       style={{
         background: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.06)',
+        borderRadius: '10px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
         overflow: 'hidden',
         border: '1px solid #e2e8f0',
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         position: 'relative',
-        marginBottom: '12px',
+        marginBottom: '10px',
         width: '100%'
       }}
       onClick={handleViewProduct}
     >
-      <div style={{ position: 'relative', overflow: 'hidden', height: '160px' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', height: '140px' }}>
         <img
           src={imageUrl}
           alt={title}
@@ -111,13 +111,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {product.discount_percentage && (
           <div style={{
             position: 'absolute',
-            top: '8px',
-            left: '8px',
+            top: '6px',
+            left: '6px',
             background: '#ef4444',
             color: 'white',
-            fontSize: '11px',
-            padding: '3px 6px',
-            borderRadius: '8px',
+            fontSize: '10px',
+            padding: '2px 5px',
+            borderRadius: '6px',
             fontWeight: '600'
           }}>
             -{product.discount_percentage}%
@@ -125,18 +125,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
         <div style={{
           position: 'absolute',
-          top: '8px',
-          right: '8px'
+          top: '6px',
+          right: '6px'
         }}>
           <button
             onClick={handleAddToWishlist}
             style={{
-              padding: '6px',
+              padding: '5px',
               background: 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(4px)',
               borderRadius: '50%',
               border: 'none',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex',
@@ -144,19 +144,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               justifyContent: 'center'
             }}
           >
-            <Heart size={14} color="#64748b" />
+            <Heart size={12} color="#64748b" />
           </button>
         </div>
         {product.availability === 'limited' && (
           <div style={{
             position: 'absolute',
-            bottom: '8px',
-            left: '8px',
+            bottom: '6px',
+            left: '6px',
             background: '#f97316',
             color: 'white',
-            fontSize: '11px',
-            padding: '3px 6px',
-            borderRadius: '8px',
+            fontSize: '10px',
+            padding: '2px 5px',
+            borderRadius: '6px',
             fontWeight: '600'
           }}>
             Limited Stock
@@ -164,17 +164,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       
-      <div style={{ padding: '12px 16px' }}>
+      <div style={{ padding: '10px 12px' }}>
         <div style={{ 
           display: 'flex', 
           alignItems: 'flex-start', 
           justifyContent: 'space-between',
-          marginBottom: '6px'
+          marginBottom: '4px'
         }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             {product.brand && (
               <p style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 color: '#64748b',
                 fontWeight: '600',
                 marginBottom: '2px',
@@ -186,9 +186,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <h3 style={{
               fontWeight: '700',
               color: '#0f172a',
-              fontSize: '14px',
+              fontSize: '13px',
               lineHeight: '1.3',
-              marginBottom: '4px',
+              marginBottom: '3px',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -203,53 +203,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         
         {description && (
           <p style={{
-            fontSize: '12px',
+            fontSize: '11px',
             color: '#64748b',
-            marginBottom: '8px',
+            marginBottom: '6px',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            maxHeight: '3em',
-            lineHeight: '1.5'
+            maxHeight: '2.8em',
+            lineHeight: '1.4'
           }}>
             {description}
           </p>
-        )}
-        
-        {product.rating && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            marginBottom: '8px'
-          }}>
-            <div style={{ display: 'flex' }}>
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={12}
-                  fill={i < Math.floor(product.rating!) ? '#facc15' : 'none'}
-                  color={i < Math.floor(product.rating!) ? '#facc15' : '#cbd5e1'}
-                />
-              ))}
-            </div>
-            <span style={{ fontSize: '11px', color: '#64748b' }}>
-              ({product.reviewCount || 0})
-            </span>
-          </div>
         )}
         
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '8px'
+          marginBottom: '6px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '800',
               color: '#0f172a'
             }}>
@@ -257,7 +234,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
             {product.originalPrice && (
               <span style={{
-                fontSize: '12px',
+                fontSize: '11px',
                 color: '#94a3b8',
                 textDecoration: 'line-through'
               }}>
@@ -266,15 +243,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             )}
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <button
               onClick={handleViewProduct}
               style={{
-                padding: '6px',
+                padding: '4px',
                 color: '#64748b',
                 background: 'transparent',
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: '4px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 display: 'flex',
@@ -283,7 +260,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               }}
               title="View Product"
             >
-              <ExternalLink size={14} />
+              <ExternalLink size={12} />
             </button>
             <button
               onClick={handleAddToCart}
@@ -291,35 +268,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '6px 10px',
+                gap: '3px',
+                padding: '4px 8px',
                 background: product.availability === 'out_of_stock' ? '#cbd5e1' : '#8b5cf6',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
-                fontSize: '12px',
+                borderRadius: '6px',
+                fontSize: '11px',
                 fontWeight: '600',
                 cursor: product.availability === 'out_of_stock' ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease'
               }}
             >
-              <ShoppingCart size={12} />
+              <ShoppingCart size={10} />
               Add
             </button>
           </div>
         </div>
         
         {product.tags && product.tags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
             {product.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
                 style={{
-                  fontSize: '10px',
+                  fontSize: '9px',
                   background: '#f1f5f9',
                   color: '#64748b',
-                  padding: '2px 6px',
-                  borderRadius: '6px',
+                  padding: '1px 4px',
+                  borderRadius: '4px',
                   fontWeight: '500'
                 }}
               >

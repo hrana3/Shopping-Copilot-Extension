@@ -20,13 +20,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       className="browseable-chat-bubble browseable-fade-in"
       style={{
         position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        width: '48px',
-        height: '48px',
+        top: '50%',
+        right: '0',
+        transform: 'translateY(-50%)',
+        width: '36px',
+        height: '36px',
         background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-        borderRadius: '50%',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        borderRadius: '8px 0 0 8px',
+        boxShadow: '-2px 2px 8px rgba(0, 0, 0, 0.15)',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
         display: 'flex',
@@ -40,14 +41,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       }}
     >
       <div style={{ position: 'relative' }}>
-        <MessageCircle size={22} color="white" />
+        <MessageCircle size={18} color="white" />
         <Sparkles 
-          size={10} 
+          size={8} 
           color="#fbbf24" 
           style={{ 
             position: 'absolute', 
-            top: '-4px', 
-            right: '-4px',
+            top: '-3px', 
+            right: '-3px',
             animation: 'pulse 2s infinite'
           }} 
         />
@@ -58,8 +59,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           position: 'absolute',
           top: '-2px',
           right: '-2px',
-          width: '14px',
-          height: '14px',
+          width: '10px',
+          height: '10px',
           background: '#ef4444',
           borderRadius: '50%',
           display: 'flex',
@@ -67,8 +68,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           justifyContent: 'center'
         }}>
           <div style={{
-            width: '6px',
-            height: '6px',
+            width: '4px',
+            height: '4px',
             background: 'white',
             borderRadius: '50%'
           }}></div>
