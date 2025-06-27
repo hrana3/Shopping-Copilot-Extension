@@ -528,6 +528,7 @@ function extractFromDom(): ShopifyProduct[] {
                   !candidateImage.includes('placeholder') && 
                   !candidateImage.includes('loading') &&
                   !candidateImage.includes('spinner') &&
+                  !candidateImage.includes('cart') &&
                   candidateImage.includes('http')) {
                 image = candidateImage;
                 console.log(`✅ Found image using selector "${selector}":`, image);
@@ -713,7 +714,20 @@ function extractFromDom(): ShopifyProduct[] {
             vendor = 'Allbirds';
           } else {
             vendor = hostname.split('.')[0];
+            // Capitalize first letter
+            vendor = vendor.charAt(0).toUpperCase() + vendor.slice(1);
           }
+        }
+
+        // Check if this is a duplicate product by comparing title and price
+        const isDuplicate = products.some(p => 
+          p.title?.toLowerCase() === title.toLowerCase() && 
+          Math.abs((p.price || 0) - (price || 0)) < 0.01
+        );
+
+        if (isDuplicate) {
+          console.log(`⚠️ Skipping duplicate product: ${title}`);
+          return;
         }
 
         const product: ShopifyProduct = {

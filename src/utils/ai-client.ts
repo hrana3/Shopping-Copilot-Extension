@@ -110,7 +110,29 @@ export class AIClient {
       return allProducts;
     }
     
-    return results;
+    // Remove duplicates based on title and price
+    const uniqueResults = results.filter((product, index, self) => 
+      index === self.findIndex(p => 
+        p.title === product.title && 
+        Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+      )
+    );
+    
+    console.log(`🔍 After removing duplicates: ${uniqueResults.length} products`);
+    
+    // Filter out products with invalid images
+    const validResults = uniqueResults.filter(product => {
+      if (!product.image) return false;
+      
+      const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+      return !invalidPatterns.some(pattern => 
+        product.image.toLowerCase().includes(pattern)
+      );
+    });
+    
+    console.log(`🔍 After filtering invalid images: ${validResults.length} products`);
+    
+    return validResults;
   }
   
   async categorizeProducts(products: Product[]): Promise<{ [category: string]: Product[] }> {

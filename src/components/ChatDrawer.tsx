@@ -1,4 +1,3 @@
-// Version: 1.0.1 - Updated for GitHub tracking
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
 import { ProductCard } from './ProductCard';
@@ -53,10 +52,16 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
   const handleAddToCart = (product: Product) => {
     console.log('Adding to cart:', product);
+    // Here you would implement the actual add to cart functionality
+    // For now, just show a notification
+    alert(`Added ${product.title} to cart!`);
   };
 
   const handleAddToWishlist = (product: Product) => {
     console.log('Adding to wishlist:', product);
+    // Here you would implement the actual add to wishlist functionality
+    // For now, just show a notification
+    alert(`Added ${product.title} to wishlist!`);
   };
 
   const suggestedQueries = [
@@ -67,6 +72,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   ];
 
   if (!isOpen) return null;
+
+  // Filter out duplicate products based on title and price
+  const uniqueProducts = products.filter((product, index, self) => 
+    index === self.findIndex(p => 
+      p.title === product.title && 
+      Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+    )
+  );
+
+  // Filter out products with invalid images
+  const validProducts = uniqueProducts.filter(product => {
+    if (!product.image) return false;
+    
+    const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+    return !invalidPatterns.some(pattern => 
+      product.image.toLowerCase().includes(pattern)
+    );
+  });
 
   return (
     <>
@@ -244,7 +267,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               ))}
               
               {/* Products Grid */}
-              {products.length > 0 && (
+              {validProducts.length > 0 && (
                 <div style={{ marginTop: '20px' }}>
                   <h3 style={{
                     fontSize: '16px',
@@ -256,7 +279,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     Recommended Products
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {products.slice(0, 4).map((product) => (
+                    {validProducts.slice(0, 4).map((product) => (
                       <ProductCard
                         key={product.id}
                         product={product}

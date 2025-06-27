@@ -24,16 +24,37 @@ export const ChatWidget: React.FC = () => {
       const extractedProducts = (window as any).__browseableAiProducts;
       if (extractedProducts && extractedProducts.length > 0) {
         console.log('✅ Found extracted products:', extractedProducts.length);
-        setProducts(extractedProducts);
+        
+        // Filter out products with invalid images or duplicates
+        const validProducts = extractedProducts.filter(product => {
+          if (!product.image) return false;
+          
+          const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+          return !invalidPatterns.some(pattern => 
+            product.image.toLowerCase().includes(pattern)
+          );
+        });
+        
+        // Remove duplicates
+        const uniqueProducts = validProducts.filter((product, index, self) => 
+          index === self.findIndex(p => 
+            p.title === product.title && 
+            Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+          )
+        );
+        
+        console.log('✅ After filtering: ', uniqueProducts.length, 'valid products');
+        
+        setProducts(uniqueProducts);
         setHasRealProducts(true);
         
         // Add a system message about finding products
         const systemMessage: ChatMessage = {
           id: Date.now().toString(),
           type: 'assistant',
-          content: `I found ${extractedProducts.length} products on this page! I can help you explore them or find similar items. What are you looking for today?`,
+          content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items. What are you looking for today?`,
           timestamp: new Date(),
-          products: extractedProducts.slice(0, 3) // Show first 3 as preview
+          products: uniqueProducts.slice(0, 3) // Show first 3 as preview
         };
         setMessages([systemMessage]);
         return true;
@@ -69,7 +90,7 @@ export const ChatWidget: React.FC = () => {
             // Find title
             let title = '';
             const titleSelectors = [
-              '.product-title', '.product-name', 'h1', 'h2', 'h3', '.title', 
+              '.product-title', '.product-name', 'h1', 'h2', 'h3', 'h4', '.title', 
               '[data-product-title]', '[itemprop="name"]'
             ];
             
@@ -165,8 +186,8 @@ export const ChatWidget: React.FC = () => {
               url = `${window.location.origin}/products/${handle}`;
             }
             
-            // Only add if we have at least title
-            if (title) {
+            // Only add if we have at least title and valid image
+            if (title && image && !image.toLowerCase().includes('cart') && !image.toLowerCase().includes('placeholder')) {
               extractedProducts.push({
                 id: String(productId),
                 title,
@@ -182,18 +203,26 @@ export const ChatWidget: React.FC = () => {
             }
           });
           
-          if (extractedProducts.length > 0) {
-            console.log('✅ Extracted products:', extractedProducts.length);
-            setProducts(extractedProducts);
+          // Remove duplicates
+          const uniqueProducts = extractedProducts.filter((product, index, self) => 
+            index === self.findIndex(p => 
+              p.title === product.title && 
+              Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+            )
+          );
+          
+          if (uniqueProducts.length > 0) {
+            console.log('✅ Extracted products:', uniqueProducts.length);
+            setProducts(uniqueProducts);
             setHasRealProducts(true);
             
             // Add a system message about finding products
             const systemMessage: ChatMessage = {
               id: Date.now().toString(),
               type: 'assistant',
-              content: `I found ${extractedProducts.length} products on this page! I can help you explore them or find similar items.`,
+              content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items.`,
               timestamp: new Date(),
-              products: extractedProducts.slice(0, 3) // Show first 3 as preview
+              products: uniqueProducts.slice(0, 3) // Show first 3 as preview
             };
             setMessages([systemMessage]);
             return true;
@@ -221,17 +250,35 @@ export const ChatWidget: React.FC = () => {
       console.log('📦 Received extracted products:', extractedProducts);
       
       if (extractedProducts && extractedProducts.length > 0) {
+        // Filter out products with invalid images or duplicates
+        const validProducts = extractedProducts.filter(product => {
+          if (!product.image) return false;
+          
+          const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+          return !invalidPatterns.some(pattern => 
+            product.image.toLowerCase().includes(pattern)
+          );
+        });
+        
+        // Remove duplicates
+        const uniqueProducts = validProducts.filter((product, index, self) => 
+          index === self.findIndex(p => 
+            p.title === product.title && 
+            Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+          )
+        );
+        
         // Replace demo products with real extracted products
-        setProducts(extractedProducts);
+        setProducts(uniqueProducts);
         setHasRealProducts(true);
         
         // Add a system message about finding products
         const systemMessage: ChatMessage = {
           id: Date.now().toString(),
           type: 'assistant',
-          content: `I found ${extractedProducts.length} products on this page! I can help you explore them or find similar items.`,
+          content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items.`,
           timestamp: new Date(),
-          products: extractedProducts.slice(0, 3) // Show first 3 as preview
+          products: uniqueProducts.slice(0, 3) // Show first 3 as preview
         };
         setMessages(prev => prev.length === 0 ? [systemMessage] : prev);
       }
