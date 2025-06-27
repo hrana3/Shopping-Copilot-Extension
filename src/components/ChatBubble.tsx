@@ -22,8 +22,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         position: 'fixed',
         bottom: '24px',
         right: '24px',
-        width: '56px',
-        height: '56px',
+        width: '48px',
+        height: '48px',
         background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
         borderRadius: '50%',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
@@ -40,9 +40,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       }}
     >
       <div style={{ position: 'relative' }}>
-        <MessageCircle size={24} color="white" />
+        <MessageCircle size={22} color="white" />
         <Sparkles 
-          size={12} 
+          size={10} 
           color="#fbbf24" 
           style={{ 
             position: 'absolute', 
@@ -58,8 +58,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           position: 'absolute',
           top: '-2px',
           right: '-2px',
-          width: '16px',
-          height: '16px',
+          width: '14px',
+          height: '14px',
           background: '#ef4444',
           borderRadius: '50%',
           display: 'flex',
@@ -67,8 +67,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           justifyContent: 'center'
         }}>
           <div style={{
-            width: '8px',
-            height: '8px',
+            width: '6px',
+            height: '6px',
             background: 'white',
             borderRadius: '50%'
           }}></div>
