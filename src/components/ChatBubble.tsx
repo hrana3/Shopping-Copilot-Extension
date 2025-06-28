@@ -23,10 +23,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         top: '50%',
         right: '0',
         transform: 'translateY(-50%)',
-        width: '36px',
-        height: '36px',
+        width: '48px', /* Increased from 36px to 48px */
+        height: '48px', /* Increased from 36px to 48px */
         background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-        borderRadius: '8px 0 0 8px',
+        borderRadius: '12px 0 0 12px', /* Increased from 8px to 12px */
         boxShadow: '-2px 2px 8px rgba(0, 0, 0, 0.15)',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
@@ -41,14 +41,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       }}
     >
       <div style={{ position: 'relative' }}>
-        <MessageCircle size={18} color="white" />
+        <MessageCircle size={24} color="white" /> {/* Increased from 18px to 24px */}
         <Sparkles 
-          size={8} 
+          size={10} /* Increased from 8px to 10px */
           color="#fbbf24" 
           style={{ 
             position: 'absolute', 
-            top: '-3px', 
-            right: '-3px',
+            top: '-4px', /* Adjusted position */
+            right: '-4px', /* Adjusted position */
             animation: 'pulse 2s infinite'
           }} 
         />
@@ -57,10 +57,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
       {hasNewMessage && (
         <div style={{
           position: 'absolute',
-          top: '-2px',
-          right: '-2px',
-          width: '10px',
-          height: '10px',
+          top: '-4px', /* Adjusted position */
+          right: '-4px', /* Adjusted position */
+          width: '12px', /* Increased from 10px to 12px */
+          height: '12px', /* Increased from 10px to 12px */
           background: '#ef4444',
           borderRadius: '50%',
           display: 'flex',
@@ -68,8 +68,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           justifyContent: 'center'
         }}>
           <div style={{
-            width: '4px',
-            height: '4px',
+            width: '6px', /* Increased from 4px to 6px */
+            height: '6px', /* Increased from 4px to 6px */
             background: 'white',
             borderRadius: '50%'
           }}></div>
