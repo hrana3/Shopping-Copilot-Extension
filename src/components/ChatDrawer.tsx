@@ -97,35 +97,19 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       <div className="browseable-chat-backdrop" onClick={onClose} />
       
       {/* Drawer */}
-      <div style={{
-        position: 'fixed',
-        top: '16px',
-        right: '16px',
-        bottom: '16px',
-        width: '600px', /* Increased from 320px to 600px */
-        maxWidth: 'calc(100vw - 32px)',
-        background: 'white',
-        borderRadius: '16px',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
-        zIndex: 2147483646,
-        pointerEvents: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        animation: 'browseableSlideIn 0.3s ease-out'
-      }}>
+      <div className="browseable-chat-drawer browseable-slide-in">
         {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '20px 24px', /* Increased padding */
+          padding: '20px 24px',
           borderBottom: '1px solid #f1f5f9',
           background: 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}> {/* Increased gap */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
-              width: '48px', /* Increased size */
+              width: '48px',
               height: '48px',
               background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
               borderRadius: '12px',
@@ -134,11 +118,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(139, 92, 246, 0.2)'
             }}>
-              <Sparkles size={24} color="white" /> {/* Increased size */}
+              <Sparkles size={24} color="white" />
             </div>
             <div>
               <h2 style={{
-                fontSize: '20px', /* Increased size */
+                fontSize: '20px',
                 fontWeight: '700',
                 color: '#0f172a',
                 margin: '0',
@@ -146,7 +130,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 letterSpacing: '-0.025em'
               }}>BROWSEABLE.AI</h2>
               <p style={{
-                fontSize: '14px', /* Increased size */
+                fontSize: '14px',
                 color: '#64748b',
                 margin: '0',
                 lineHeight: '1.2',
@@ -168,7 +152,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               justifyContent: 'center'
             }}
           >
-            <X size={24} color="#64748b" /> {/* Increased size */}
+            <X size={24} color="#64748b" />
           </button>
         </div>
 
@@ -178,52 +162,52 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           style={{
             flex: '1',
             overflowY: 'auto',
-            padding: '24px', /* Increased padding */
+            padding: '24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px' /* Increased gap */
+            gap: '20px'
           }}
         >
           {messages.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 24px' }}> {/* Increased padding */}
+            <div style={{ textAlign: 'center', padding: '40px 24px' }}>
               <div style={{
-                width: '64px', /* Increased size */
+                width: '64px',
                 height: '64px',
                 background: 'linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%)',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 24px' /* Increased margin */
+                margin: '0 auto 24px'
               }}>
-                <ShoppingBag size={32} color="#8b5cf6" /> {/* Increased size */}
+                <ShoppingBag size={32} color="#8b5cf6" />
               </div>
               <h3 style={{
-                fontSize: '20px', /* Increased size */
+                fontSize: '20px',
                 fontWeight: '700',
                 color: '#0f172a',
-                margin: '0 0 12px', /* Increased margin */
+                margin: '0 0 12px',
                 lineHeight: '1.3',
                 letterSpacing: '-0.025em'
               }}>
                 Welcome to your AI Shopping Assistant!
               </h3>
               <p style={{
-                fontSize: '16px', /* Increased size */
+                fontSize: '16px',
                 color: '#64748b',
-                margin: '0 0 28px', /* Increased margin */
+                margin: '0 0 28px',
                 lineHeight: '1.5',
                 fontWeight: '400'
               }}>
                 I'll help you find the perfect products based on your style and preferences.
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}> {/* Increased gap */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <p style={{
-                  fontSize: '16px', /* Increased size */
+                  fontSize: '16px',
                   fontWeight: '600',
                   color: '#374151',
-                  margin: '0 0 8px' /* Increased margin */
+                  margin: '0 0 8px'
                 }}>Try asking me:</p>
                 {suggestedQueries.map((query, index) => (
                   <button
@@ -232,11 +216,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     style={{
                       width: '100%',
                       textAlign: 'left',
-                      padding: '16px 20px', /* Increased padding */
+                      padding: '16px 20px',
                       background: '#f8fafc',
                       border: '1px solid #e2e8f0',
-                      borderRadius: '14px', /* Increased border radius */
-                      fontSize: '15px', /* Increased size */
+                      borderRadius: '14px',
+                      fontSize: '15px',
                       color: '#374151',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
@@ -255,12 +239,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 <div key={message.id} style={{
                   display: 'flex',
                   justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: '20px' /* Increased margin */
+                  marginBottom: '20px'
                 }}>
                   <div style={{
                     maxWidth: '85%',
-                    padding: '16px 20px', /* Increased padding */
-                    borderRadius: '18px', /* Increased border radius */
+                    padding: '16px 20px',
+                    borderRadius: '18px',
                     background: message.type === 'user' 
                       ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' 
                       : '#f8fafc',
@@ -273,7 +257,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     border: message.type === 'user' ? 'none' : '1px solid #e2e8f0'
                   }}>
                     <p style={{
-                      fontSize: '16px', /* Increased size */
+                      fontSize: '16px',
                       lineHeight: '1.5',
                       margin: '0',
                       fontWeight: '500'
@@ -284,24 +268,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               
               {/* Products Grid */}
               {validProducts.length > 0 && (
-                <div style={{ marginTop: '24px', marginBottom: '20px' }}> {/* Increased margins */}
+                <div style={{ marginTop: '24px', marginBottom: '20px' }}>
                   <h3 style={{
-                    fontSize: '18px', /* Increased size */
+                    fontSize: '18px',
                     fontWeight: '700',
                     color: '#0f172a',
-                    margin: '0 0 20px', /* Increased margin */
+                    margin: '0 0 20px',
                     letterSpacing: '-0.025em',
-                    padding: '0 4px' /* Added padding */
+                    padding: '0 4px'
                   }}>
                     RECOMMENDED PRODUCTS
                   </h3>
                   <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    gap: '24px', /* Increased gap */
-                    maxHeight: '800px', /* Increased max height */
-                    overflowY: 'auto', /* Enable vertical scrolling */
-                    padding: '4px' /* Added padding */
+                    gap: '24px',
+                    maxHeight: '800px',
+                    overflowY: 'auto',
+                    padding: '4px'
                   }}>
                     {validProducts.map((product) => (
                       <ProductCard
@@ -318,19 +302,19 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           )}
           
           {isLoading && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', padding: '0 4px' }}> {/* Added padding */}
+            <div style={{ display: 'flex', justifyContent: 'flex-start', padding: '0 4px' }}>
               <div style={{
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
-                borderRadius: '18px', /* Increased border radius */
+                borderRadius: '18px',
                 borderBottomLeftRadius: '4px',
-                padding: '16px 20px', /* Increased padding */
+                padding: '16px 20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px' /* Increased gap */
+                gap: '12px'
               }}>
-                <Loader2 size={18} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} /> {/* Increased size */}
-                <span style={{ fontSize: '15px', color: '#64748b', fontWeight: '500' }}>AI is thinking...</span> {/* Increased size */}
+                <Loader2 size={18} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '15px', color: '#64748b', fontWeight: '500' }}>AI is thinking...</span>
               </div>
             </div>
           )}
@@ -341,10 +325,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         {/* Input Area */}
         <div style={{
           borderTop: '1px solid #f1f5f9',
-          padding: '24px', /* Increased padding */
+          padding: '24px',
           background: '#fafbfc'
         }}>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '16px' }}> {/* Increased gap */}
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '16px' }}>
             <input
               ref={inputRef}
               type="text"
@@ -353,10 +337,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               placeholder="Ask me about products, styles, or recommendations..."
               style={{
                 flex: '1',
-                padding: '16px 20px', /* Increased padding */
+                padding: '16px 20px',
                 border: '1px solid #e2e8f0',
-                borderRadius: '16px', /* Increased border radius */
-                fontSize: '16px', /* Increased size */
+                borderRadius: '16px',
+                fontSize: '16px',
                 outline: 'none',
                 transition: 'all 0.2s ease',
                 background: 'white',
@@ -368,29 +352,29 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
               style={{
-                padding: '16px 20px', /* Increased padding */
+                padding: '16px 20px',
                 background: inputMessage.trim() && !isLoading 
                   ? 'linear-gradient(135deg, #8b5cf6 0%,  #7c3aed 100%)' 
                   : '#cbd5e1',
                 color: 'white',
                 border: 'none',
-                borderRadius: '16px', /* Increased border radius */
+                borderRadius: '16px',
                 cursor: inputMessage.trim() && !isLoading ? 'pointer' : 'not-allowed',
                 transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px', /* Increased gap */
+                gap: '12px',
                 fontWeight: '600',
-                fontSize: '16px', /* Increased size */
+                fontSize: '16px',
                 boxShadow: inputMessage.trim() && !isLoading 
                   ? '0 2px 4px rgba(139, 92, 246, 0.2)' 
                   : 'none'
               }}
             >
               {isLoading ? (
-                <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> /* Increased size */
+                <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
               ) : (
-                <Send size={20} /> /* Increased size */
+                <Send size={20} />
               )}
               Send
             </button>

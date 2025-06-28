@@ -26,26 +26,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleViewProduct = () => {
-    // Validate URL before opening
-    try {
-      const url = new URL(product.url);
-      if (url.protocol === 'http:' || url.protocol === 'https:') {
-        window.open(product.url, '_blank');
-      }
-    } catch (error) {
-      console.warn('Invalid product URL:', product.url);
-    }
+    window.open(product.url, '_blank');
   };
 
   // Format price to always show 2 decimal places if it's a number
   const formatPrice = (price: number | string): string => {
     if (typeof price === 'number') {
       return price.toFixed(2);
-    }
-    // If it's a string that can be parsed as a number, format it
-    const numPrice = parseFloat(String(price));
-    if (!isNaN(numPrice)) {
-      return numPrice.toFixed(2);
     }
     return String(price);
   };
@@ -92,7 +79,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div 
       className="browseable-product-card"
-      onClick={handleViewProduct}
       style={{
         background: 'white',
         borderRadius: '14px',
@@ -102,11 +88,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         position: 'relative',
-        marginBottom: '24px', /* Increased spacing between cards */
+        marginBottom: '24px',
         width: '100%'
       }}
+      onClick={handleViewProduct}
     >
-      <div style={{ position: 'relative', overflow: 'hidden', height: '300px' }}> {/* Increased height to 300px */}
+      <div style={{ position: 'relative', overflow: 'hidden', height: '300px' }}>
         <img
           src={imageUrl}
           alt={title}
@@ -124,12 +111,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {product.discount_percentage && (
           <div style={{
             position: 'absolute',
-            top: '12px', /* Increased spacing */
+            top: '12px',
             left: '12px',
             background: '#ef4444',
             color: 'white',
-            fontSize: '14px', /* Increased font size */
-            padding: '4px 8px', /* Increased padding */
+            fontSize: '14px',
+            padding: '4px 8px',
             borderRadius: '8px',
             fontWeight: '600'
           }}>
@@ -138,13 +125,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
         <div style={{
           position: 'absolute',
-          top: '12px', /* Increased spacing */
+          top: '12px',
           right: '12px'
         }}>
           <button
             onClick={handleAddToWishlist}
             style={{
-              padding: '8px', /* Increased touch target */
+              padding: '10px',
               background: 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(4px)',
               borderRadius: '50%',
@@ -154,21 +141,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px'
             }}
           >
-            <Heart size={16} color="#64748b" /> {/* Increased size */}
+            <Heart size={18} color="#64748b" />
           </button>
         </div>
         {product.availability === 'limited' && (
           <div style={{
             position: 'absolute',
-            bottom: '12px', /* Increased spacing */
+            bottom: '12px',
             left: '12px',
             background: '#f97316',
             color: 'white',
-            fontSize: '14px', /* Increased font size */
-            padding: '4px 8px', /* Increased padding */
+            fontSize: '14px',
+            padding: '4px 8px',
             borderRadius: '8px',
             fontWeight: '600'
           }}>
@@ -177,20 +166,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       
-      <div style={{ padding: '20px' }}> {/* Increased padding */}
+      <div style={{ padding: '20px' }}>
         <div style={{ 
           display: 'flex', 
           alignItems: 'flex-start', 
           justifyContent: 'space-between',
-          marginBottom: '12px' /* Increased spacing */
+          marginBottom: '12px'
         }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             {product.brand && (
               <p style={{
-                fontSize: '14px', /* Increased font size */
+                fontSize: '14px',
                 color: '#64748b',
                 fontWeight: '600',
-                marginBottom: '6px', /* Increased spacing */
+                marginBottom: '6px',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
@@ -199,9 +188,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <h3 style={{
               fontWeight: '700',
               color: '#0f172a',
-              fontSize: '18px', /* Increased font size */
+              fontSize: '18px',
               lineHeight: '1.4',
-              marginBottom: '8px', /* Increased spacing */
+              marginBottom: '8px',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -216,9 +205,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         
         {description && (
           <p style={{
-            fontSize: '15px', /* Increased font size */
+            fontSize: '15px',
             color: '#64748b',
-            marginBottom: '16px', /* Increased spacing */
+            marginBottom: '16px',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -235,11 +224,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '16px' /* Increased spacing */
+          marginBottom: '16px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}> {/* Increased spacing */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{
-              fontSize: '20px', /* Increased font size */
+              fontSize: '20px',
               fontWeight: '800',
               color: '#0f172a'
             }}>
@@ -247,7 +236,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
             {product.originalPrice && (
               <span style={{
-                fontSize: '15px', /* Increased font size */
+                fontSize: '15px',
                 color: '#94a3b8',
                 textDecoration: 'line-through'
               }}>
@@ -256,11 +245,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             )}
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}> {/* Increased spacing */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               onClick={handleViewProduct}
               style={{
-                padding: '8px', /* Increased touch target */
+                padding: '8px',
                 color: '#64748b',
                 background: 'transparent',
                 border: 'none',
@@ -273,7 +262,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               }}
               title="View Product"
             >
-              <ExternalLink size={18} /> {/* Increased size */}
+              <ExternalLink size={18} />
             </button>
             <button
               onClick={handleAddToCart}
@@ -282,33 +271,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '10px 14px', /* Increased padding */
+                padding: '10px 14px',
                 background: product.availability === 'out_of_stock' ? '#cbd5e1' : '#8b5cf6',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px', /* Increased border radius */
-                fontSize: '15px', /* Increased font size */
+                borderRadius: '10px',
+                fontSize: '15px',
                 fontWeight: '600',
                 cursor: product.availability === 'out_of_stock' ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease'
               }}
             >
-              <ShoppingCart size={16} /> {/* Increased size */}
+              <ShoppingCart size={16} />
               Add to Cart
             </button>
           </div>
         </div>
         
         {product.tags && product.tags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}> {/* Increased spacing */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {product.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
                 style={{
-                  fontSize: '13px', /* Increased font size */
+                  fontSize: '13px',
                   background: '#f1f5f9',
                   color: '#64748b',
-                  padding: '4px 10px', /* Increased padding */
+                  padding: '4px 10px',
                   borderRadius: '8px',
                   fontWeight: '500'
                 }}
