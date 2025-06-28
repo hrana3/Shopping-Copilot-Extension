@@ -81,6 +81,19 @@ function initializeChatWidget() {
       console.error('❌ Widget not found in DOM after insertion');
     }
 
+    // Send extracted products to background script for sharing between tabs
+    if ((window as any).__browseableAiProducts || (window as any).__BROWSEABLE_PRODUCTS) {
+      const products = (window as any).__browseableAiProducts || (window as any).__BROWSEABLE_PRODUCTS;
+      if (chrome && chrome.runtime && products && products.length > 0) {
+        chrome.runtime.sendMessage({ 
+          type: 'SAVE_PRODUCTS', 
+          products: products 
+        }, (response) => {
+          console.log('🔄 Saved products to background script:', response);
+        });
+      }
+    }
+
   } catch (error) {
     console.error('💥 Error initializing chat widget:', error);
   }
