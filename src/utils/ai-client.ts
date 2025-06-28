@@ -10,43 +10,48 @@ export class AIClient {
   }
   
   async generateResponse(userMessage: string, products: Product[], context?: any): Promise<string> {
-    // For MVP, return a mock response
-    const responses = [
-      `I found ${products.length} products that match your style! Let me show you the best options.`,
-      "Based on your preferences, I'd recommend checking out these items. They're trending and perfect for your style!",
-      "Great choice! These products are highly rated and would work well with your existing wardrobe.",
-      "I've curated some amazing options for you. Would you like me to explain why each one would be perfect?",
-      "These picks are spot-on for your taste! Each one offers great quality and style."
-    ];
+    // This function now uses real products instead of mocked data
+    
+    // If no products found, return a helpful message
+    if (products.length === 0) {
+      return "I couldn't find any products matching your request. Could you try a different search term or category?";
+    }
+    
+    // If only one product found, provide a specific response
+    if (products.length === 1) {
+      const product = products[0];
+      return `I found this ${product.category.toLowerCase()} that matches your request! It's a ${product.title} ${product.brand ? `from ${product.brand}` : ''} priced at $${product.price.toFixed(2)}.`;
+    }
+    
+    // For multiple products, provide a more detailed response
+    const categories = [...new Set(products.map(p => p.category))];
+    const brands = [...new Set(products.map(p => p.brand).filter(Boolean))];
+    const priceRange = {
+      min: Math.min(...products.map(p => p.price)),
+      max: Math.max(...products.map(p => p.price))
+    };
     
     // Simple keyword matching for more relevant responses
     const lowerMessage = userMessage.toLowerCase();
     
     if (lowerMessage.includes('budget') || lowerMessage.includes('cheap') || lowerMessage.includes('affordable')) {
-      return "I've filtered for budget-friendly options that don't compromise on style. Here are some great value picks!";
+      return `I've found ${products.length} budget-friendly options ranging from $${priceRange.min.toFixed(2)} to $${priceRange.max.toFixed(2)}. These items offer great value while matching your style preferences.`;
     }
     
     if (lowerMessage.includes('luxury') || lowerMessage.includes('premium') || lowerMessage.includes('high-end')) {
-      return "I've selected some premium pieces that offer exceptional quality and craftsmanship. These investment pieces will elevate your wardrobe.";
+      return `I've selected ${products.length} premium pieces ${brands.length > 0 ? `from brands like ${brands.slice(0, 3).join(', ')}` : ''} that offer exceptional quality and craftsmanship. These investment pieces will elevate your wardrobe.`;
     }
     
     if (lowerMessage.includes('casual') || lowerMessage.includes('everyday')) {
-      return "Perfect for everyday wear! These pieces are comfortable, versatile, and effortlessly stylish.";
+      return `Here are ${products.length} casual items perfect for everyday wear! These pieces are comfortable, versatile, and effortlessly stylish.`;
     }
     
     if (lowerMessage.includes('formal') || lowerMessage.includes('professional') || lowerMessage.includes('work')) {
-      return "These sophisticated pieces are perfect for professional settings while maintaining your personal style.";
+      return `I've found ${products.length} sophisticated pieces perfect for professional settings while maintaining your personal style. ${brands.length > 0 ? `Featuring items from ${brands.slice(0, 2).join(' and ')}.` : ''}`;
     }
     
-    if (products.length === 0) {
-      return "I couldn't find any products matching your request. Could you try a different search term or category?";
-    }
-    
-    if (products.length === 1) {
-      return `I found this ${products[0].category.toLowerCase()} that matches your request! It's a ${products[0].title} from ${products[0].brand || 'a great brand'}.`;
-    }
-    
-    return responses[Math.floor(Math.random() * responses.length)];
+    // Default response with product information
+    return `I found ${products.length} products that match your request! ${categories.length > 1 ? `They span categories including ${categories.slice(0, 3).join(', ')}` : `They're all in the ${categories[0]} category`} with prices ranging from $${priceRange.min.toFixed(2)} to $${priceRange.max.toFixed(2)}.`;
   }
   
   async searchProducts(query: string, allProducts: Product[]): Promise<Product[]> {
@@ -72,7 +77,8 @@ export class AIClient {
     
     // Score each product based on matches
     const scoredProducts = allProducts.map(product => {
-      const searchText = `${product.title} ${product.description} ${product.category} ${product.tags.join(' ')} ${product.brand || ''}`.toLowerCase();
+      // Create a searchable text from all product fields
+      const searchText = `${product.title} ${product.description || ''} ${product.category || ''} ${(product.tags || []).join(' ')} ${product.brand || ''}`.toLowerCase();
       
       let score = 0;
       
@@ -88,8 +94,36 @@ export class AIClient {
         }
         
         // Bonus for exact tag matches
-        if (product.tags.some(tag => tag.toLowerCase() === term)) {
+        if (product.tags && product.tags.some(tag => tag.toLowerCase() === term)) {
           score += 3;
+        }
+        
+        // Bonus for brand matches
+        if (product.brand && product.brand.toLowerCase().includes(term)) {
+          score += 4;
+        }
+        
+        // Bonus for category matches
+        if (product.category && product.category.toLowerCase().includes(term)) {
+          score += 4;
+        }
+        
+        // Price matching for terms like "under $50" or "$100-$200"
+        if (term.includes('under') && searchTerms.some(t => t.startsWith('$'))) {
+          const priceLimit = parseFloat(searchTerms.find(t => t.startsWith('$'))?.substring(1) || '0');
+          if (priceLimit > 0 && product.price < priceLimit) {
+            score += 8;
+          }
+        }
+        
+        // Check for price range
+        const priceRangeMatch = query.match(/\$(\d+)\s*-\s*\$(\d+)/);
+        if (priceRangeMatch) {
+          const minPrice = parseFloat(priceRangeMatch[1]);
+          const maxPrice = parseFloat(priceRangeMatch[2]);
+          if (product.price >= minPrice && product.price <= maxPrice) {
+            score += 8;
+          }
         }
       });
       
@@ -136,8 +170,9 @@ export class AIClient {
   }
   
   async categorizeProducts(products: Product[]): Promise<{ [category: string]: Product[] }> {
+    // Group products by category
     return products.reduce((acc, product) => {
-      const category = product.category;
+      const category = product.category || 'Uncategorized';
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -147,11 +182,27 @@ export class AIClient {
   }
   
   async recommendProducts(userProfile: any, products: Product[]): Promise<Product[]> {
-    // For MVP, return products sorted by rating and availability
+    // For real implementation, this would use user preferences to filter and sort products
+    // For now, return products sorted by availability and price
     return products
       .filter(p => p.availability === 'in_stock')
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      .slice(0, 6);
+      .sort((a, b) => {
+        // First sort by availability
+        if (a.availability !== b.availability) {
+          return a.availability === 'in_stock' ? -1 : 1;
+        }
+        
+        // Then by discount percentage (if available)
+        const aDiscount = a.discount_percentage || 0;
+        const bDiscount = b.discount_percentage || 0;
+        if (aDiscount !== bDiscount) {
+          return bDiscount - aDiscount; // Higher discount first
+        }
+        
+        // Then by price (lower first)
+        return a.price - b.price;
+      })
+      .slice(0, 6); // Limit to 6 products
   }
 }
 

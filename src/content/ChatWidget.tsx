@@ -4,7 +4,6 @@ import { ChatBubble } from '../components/ChatBubble';
 import { ChatDrawer } from '../components/ChatDrawer';
 import { Product, ChatMessage } from '../types/product';
 import { aiClient } from '../utils/ai-client';
-import demoProducts from '../data/demo-products.json';
 
 export const ChatWidget: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -21,7 +20,14 @@ export const ChatWidget: React.FC = () => {
       console.log('🔍 Attempting to extract products from page...');
       
       // Check for products set by shopifyParser
-      const extractedProducts = (window as any).__browseableAiProducts;
+      // First check window.__browseableAiProducts (old format)
+      let extractedProducts = (window as any).__browseableAiProducts;
+      
+      // Then check window.__BROWSEABLE_PRODUCTS (new format)
+      if (!extractedProducts || extractedProducts.length === 0) {
+        extractedProducts = (window as any).__BROWSEABLE_PRODUCTS;
+      }
+      
       if (extractedProducts && extractedProducts.length > 0) {
         console.log('✅ Found extracted products:', extractedProducts.length);
         
@@ -232,16 +238,62 @@ export const ChatWidget: React.FC = () => {
         console.error('❌ Error extracting products from DOM:', error);
       }
       
+      // Try to get products from chrome.runtime messaging
+      if (chrome && chrome.runtime) {
+        try {
+          chrome.runtime.sendMessage({ type: 'GET_PRODUCTS' }, (response) => {
+            if (response && response.products && response.products.length > 0) {
+              console.log('✅ Received products from background script:', response.products.length);
+              
+              // Filter and deduplicate products
+              const validProducts = response.products.filter(product => {
+                if (!product.image) return false;
+                
+                const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+                return !invalidPatterns.some(pattern => 
+                  product.image.toLowerCase().includes(pattern)
+                );
+              });
+              
+              const uniqueProducts = validProducts.filter((product, index, self) => 
+                index === self.findIndex(p => 
+                  p.title === product.title && 
+                  Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+                )
+              );
+              
+              if (uniqueProducts.length > 0) {
+                setProducts(uniqueProducts);
+                setHasRealProducts(true);
+                
+                // Add a system message about finding products
+                const systemMessage: ChatMessage = {
+                  id: Date.now().toString(),
+                  type: 'assistant',
+                  content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items.`,
+                  timestamp: new Date(),
+                  products: uniqueProducts.slice(0, 3) // Show first 3 as preview
+                };
+                setMessages([systemMessage]);
+                return true;
+              }
+            }
+            return false;
+          });
+        } catch (error) {
+          console.error('❌ Error getting products from background script:', error);
+        }
+      }
+      
       return false;
     };
     
     // Try to extract products immediately
     const foundProducts = extractProductsFromPage();
     
-    // If we couldn't find products, use demo products
+    // If we couldn't find products, we'll wait for them to be extracted
     if (!foundProducts) {
-      console.log('⚠️ No products found on page, using demo products');
-      setProducts(demoProducts as Product[]);
+      console.log('⚠️ No products found on page yet, waiting for extraction events');
     }
     
     // Listen for product extraction events
@@ -284,11 +336,12 @@ export const ChatWidget: React.FC = () => {
       }
     };
 
-    // Listen for product extraction events
+    // Listen for product extraction events (both old and new format)
     window.addEventListener('browseableAiProductsExtracted', handleProductsExtracted as EventListener);
+    window.addEventListener('BROWSEABLE_PRODUCTS_EXTRACTED', handleProductsExtracted as EventListener);
 
     // Check if products are already available (parser ran before widget loaded)
-    const existingProducts = (window as any).__browseableAiProducts;
+    const existingProducts = (window as any).__browseableAiProducts || (window as any).__BROWSEABLE_PRODUCTS;
     if (existingProducts && existingProducts.length > 0) {
       handleProductsExtracted({ detail: { products: existingProducts } } as CustomEvent);
     }
@@ -303,6 +356,7 @@ export const ChatWidget: React.FC = () => {
 
     return () => {
       window.removeEventListener('browseableAiProductsExtracted', handleProductsExtracted as EventListener);
+      window.removeEventListener('BROWSEABLE_PRODUCTS_EXTRACTED', handleProductsExtracted as EventListener);
       clearTimeout(retryTimeout);
     };
   }, [hasRealProducts]);
@@ -327,7 +381,7 @@ export const ChatWidget: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Use current products (real or demo) for search
+      // Use real products for search instead of demo products
       const relevantProducts = await aiClient.searchProducts(messageContent, products);
       
       // Generate AI response

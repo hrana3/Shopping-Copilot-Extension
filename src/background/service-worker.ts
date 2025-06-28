@@ -2,6 +2,9 @@
 // Background service worker for the Chrome extension
 console.log('Browseable.ai service worker loaded');
 
+// Store extracted products in memory for sharing between tabs
+let extractedProducts: any[] = [];
+
 // Handle extension installation
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
@@ -45,8 +48,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
       
     case 'GET_PRODUCTS':
-      // In a real implementation, this might fetch from an API
-      sendResponse({ products: [] });
+      // Return products from memory or empty array
+      sendResponse({ products: extractedProducts || [] });
+      break;
+      
+    case 'SAVE_PRODUCTS':
+      // Save products to memory for sharing between tabs
+      if (request.products && Array.isArray(request.products)) {
+        extractedProducts = request.products;
+        console.log('Saved products to background service worker:', extractedProducts.length);
+        sendResponse({ success: true, count: extractedProducts.length });
+      } else {
+        sendResponse({ success: false, error: 'Invalid products data' });
+      }
       break;
       
     default:

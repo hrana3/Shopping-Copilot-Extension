@@ -48,6 +48,8 @@ interface ShopifyGlobals {
 declare global {
   interface Window extends ShopifyGlobals {
     Shopify?: any;
+    __browseableAiProducts?: Product[];
+    __BROWSEABLE_PRODUCTS?: Product[];
   }
 }
 
@@ -916,6 +918,12 @@ export function extractProducts(): Product[] {
   });
 
   console.log(`🎉 Final extracted products: ${uniqueProducts.length}`);
+  
+  // Store products in window global for other components to access
+  // Use both old and new formats for backward compatibility
+  window.__browseableAiProducts = uniqueProducts;
+  window.__BROWSEABLE_PRODUCTS = uniqueProducts;
+  
   return uniqueProducts;
 }
 
@@ -937,10 +945,15 @@ export function initShopifyParser(): void {
         console.log(`✅ Successfully extracted ${products.length} products`);
         
         // Store products for the chat widget to access
-        (window as any).__browseableAiProducts = products;
+        window.__browseableAiProducts = products;
+        window.__BROWSEABLE_PRODUCTS = products;
         
-        // Dispatch custom event to notify chat widget
+        // Dispatch custom event to notify chat widget (both old and new format)
         window.dispatchEvent(new CustomEvent('browseableAiProductsExtracted', {
+          detail: { products }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('BROWSEABLE_PRODUCTS_EXTRACTED', {
           detail: { products }
         }));
         
