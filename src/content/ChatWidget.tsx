@@ -66,6 +66,53 @@ export const ChatWidget: React.FC = () => {
         return true;
       }
       
+      // Try to get products from chrome.runtime messaging
+      if (chrome && chrome.runtime) {
+        try {
+          chrome.runtime.sendMessage({ type: 'GET_PRODUCTS' }, (response) => {
+            if (response && response.products && response.products.length > 0) {
+              console.log('✅ Received products from background script:', response.products.length);
+              
+              // Filter and deduplicate products
+              const validProducts = response.products.filter(product => {
+                if (!product.image) return false;
+                
+                const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
+                return !invalidPatterns.some(pattern => 
+                  product.image.toLowerCase().includes(pattern)
+                );
+              });
+              
+              const uniqueProducts = validProducts.filter((product, index, self) => 
+                index === self.findIndex(p => 
+                  p.title === product.title && 
+                  Math.abs((p.price || 0) - (product.price || 0)) < 0.01
+                )
+              );
+              
+              if (uniqueProducts.length > 0) {
+                setProducts(uniqueProducts);
+                setHasRealProducts(true);
+                
+                // Add a system message about finding products
+                const systemMessage: ChatMessage = {
+                  id: Date.now().toString(),
+                  type: 'assistant',
+                  content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items.`,
+                  timestamp: new Date(),
+                  products: uniqueProducts.slice(0, 3) // Show first 3 as preview
+                };
+                setMessages([systemMessage]);
+                return true;
+              }
+            }
+            return false;
+          });
+        } catch (error) {
+          console.error('❌ Error getting products from background script:', error);
+        }
+      }
+      
       // Try to extract products from the page using DOM as fallback
       try {
         // Look for product elements
@@ -84,9 +131,8 @@ export const ChatWidget: React.FC = () => {
           
           const extractedProducts: Product[] = [];
           
+          // No arbitrary limit - process all found products
           productElements.forEach((element, index) => {
-            if (index >= 20) return; // Limit to 20 products
-            
             // Try to extract product info
             const productId = element.getAttribute('data-product-id') || 
                              element.getAttribute('data-product') || 
@@ -238,53 +284,6 @@ export const ChatWidget: React.FC = () => {
         console.error('❌ Error extracting products from DOM:', error);
       }
       
-      // Try to get products from chrome.runtime messaging
-      if (chrome && chrome.runtime) {
-        try {
-          chrome.runtime.sendMessage({ type: 'GET_PRODUCTS' }, (response) => {
-            if (response && response.products && response.products.length > 0) {
-              console.log('✅ Received products from background script:', response.products.length);
-              
-              // Filter and deduplicate products
-              const validProducts = response.products.filter(product => {
-                if (!product.image) return false;
-                
-                const invalidPatterns = ['cart', 'placeholder', 'loading', 'spinner'];
-                return !invalidPatterns.some(pattern => 
-                  product.image.toLowerCase().includes(pattern)
-                );
-              });
-              
-              const uniqueProducts = validProducts.filter((product, index, self) => 
-                index === self.findIndex(p => 
-                  p.title === product.title && 
-                  Math.abs((p.price || 0) - (product.price || 0)) < 0.01
-                )
-              );
-              
-              if (uniqueProducts.length > 0) {
-                setProducts(uniqueProducts);
-                setHasRealProducts(true);
-                
-                // Add a system message about finding products
-                const systemMessage: ChatMessage = {
-                  id: Date.now().toString(),
-                  type: 'assistant',
-                  content: `I found ${uniqueProducts.length} products on this page! I can help you explore them or find similar items.`,
-                  timestamp: new Date(),
-                  products: uniqueProducts.slice(0, 3) // Show first 3 as preview
-                };
-                setMessages([systemMessage]);
-                return true;
-              }
-            }
-            return false;
-          });
-        } catch (error) {
-          console.error('❌ Error getting products from background script:', error);
-        }
-      }
-      
       return false;
     };
     
@@ -296,7 +295,7 @@ export const ChatWidget: React.FC = () => {
       console.log('⚠️ No products found on page yet, waiting for extraction events');
     }
     
-    // Listen for product extraction events
+    // Function to handle product extraction events
     const handleProductsExtracted = (event: CustomEvent) => {
       const { products: extractedProducts } = event.detail;
       console.log('📦 Received extracted products:', extractedProducts);
@@ -354,10 +353,50 @@ export const ChatWidget: React.FC = () => {
       }
     }, 2000);
 
+    // Set up MutationObserver to detect new products
+    const observer = new MutationObserver((mutations) => {
+      // Check if we should re-extract products
+      let shouldReExtract = false;
+      
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          // Check if any added nodes might be products
+          for (const node of Array.from(mutation.addedNodes)) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              
+              // Check if this element or its children might be products
+              if (element.querySelector('[data-product-id], .product, .product-card, [class*="product"]') ||
+                  element.matches('[data-product-id], .product, .product-card, [class*="product"]')) {
+                shouldReExtract = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (shouldReExtract) break;
+      }
+      
+      if (shouldReExtract && !hasRealProducts) {
+        console.log('🔄 Detected new product elements, re-extracting...');
+        extractProductsFromPage();
+      }
+    });
+    
+    // Start observing the document
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
+
     return () => {
       window.removeEventListener('browseableAiProductsExtracted', handleProductsExtracted as EventListener);
       window.removeEventListener('BROWSEABLE_PRODUCTS_EXTRACTED', handleProductsExtracted as EventListener);
       clearTimeout(retryTimeout);
+      observer.disconnect();
     };
   }, [hasRealProducts]);
 
@@ -414,6 +453,19 @@ export const ChatWidget: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // If no products found, show an empty state message
+  useEffect(() => {
+    if (products.length === 0 && messages.length === 0 && hasRealProducts) {
+      const emptyStateMessage: ChatMessage = {
+        id: Date.now().toString(),
+        type: 'assistant',
+        content: "I couldn't find any products on this page. Try navigating to a product listing or product detail page, or ask me a general shopping question!",
+        timestamp: new Date()
+      };
+      setMessages([emptyStateMessage]);
+    }
+  }, [products.length, messages.length, hasRealProducts]);
 
   return (
     <>

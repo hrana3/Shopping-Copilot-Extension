@@ -306,6 +306,7 @@ function extractPrice(text: string): number | undefined {
 
 /**
  * Enhanced DOM extraction specifically optimized for Gymshark and similar sites
+ * Now with improved product discovery and no arbitrary limits
  */
 function extractFromDom(): ShopifyProduct[] {
   try {
@@ -408,15 +409,14 @@ function extractFromDom(): ShopifyProduct[] {
         }
       });
       
-      productElements = productEls.slice(0, 100); // Limit to prevent performance issues
+      // No arbitrary limit - get all products we can find
+      productElements = productEls;
       console.log('🔍 Found product elements with aggressive detection:', productElements.length);
     }
 
-    // Process each product element
+    // Process each product element - no arbitrary limit
     productElements.forEach((element, index) => {
       try {
-        if (index >= 100) return; // Limit to 100 products to avoid performance issues
-        
         console.log(`🔍 Processing DOM element ${index + 1}`);
         
         // Try to get product ID from various attributes
@@ -873,6 +873,7 @@ function mapShopifyToProduct(shopifyProduct: ShopifyProduct): Product | null {
 
 /**
  * Extracts all products from the current page
+ * Enhanced to find more products and handle lazy-loaded content
  */
 export function extractProducts(): Product[] {
   console.log('🚀 Starting product extraction...');
@@ -901,18 +902,22 @@ export function extractProducts(): Product[] {
         
         console.log(`✅ Successfully mapped ${mappedProducts.length} products`);
         allProducts.push(...mappedProducts);
-        break; // Use first successful method
+        
+        // Don't break here - collect products from all methods
+        // This is a change from previous behavior to get more products
       }
     } catch (error) {
       console.warn(`⚠️ Error in extraction method ${method.name}:`, error);
     }
   }
 
-  // Remove duplicates based on title similarity (since IDs might be generated)
+  // Remove duplicates based on title similarity and URL
   const uniqueProducts = allProducts.filter((product, index, array) => {
+    // Check if this is the first occurrence of this product by title and price
     const firstIndex = array.findIndex(p => 
-      p.id === product.id || 
-      (p.title.toLowerCase() === product.title.toLowerCase() && Math.abs(p.price - product.price) < 0.01)
+      (p.title.toLowerCase() === product.title.toLowerCase() && 
+       Math.abs(p.price - product.price) < 0.01) ||
+      (p.url === product.url && p.url !== '')
     );
     return firstIndex === index;
   });
@@ -929,6 +934,7 @@ export function extractProducts(): Product[] {
 
 /**
  * Main initialization function for product parser
+ * Enhanced to handle lazy-loaded content and pagination
  */
 export function initShopifyParser(): void {
   try {
@@ -966,6 +972,58 @@ export function initShopifyParser(): void {
     
     // Try immediate extraction
     const immediateSuccess = runExtraction();
+    
+    // Set up MutationObserver to detect new products (for lazy loading)
+    const observer = new MutationObserver((mutations) => {
+      // Check if new product elements were added
+      let shouldReExtract = false;
+      
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          // Check if any added nodes might be products
+          for (const node of Array.from(mutation.addedNodes)) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              
+              // Check if this element or its children might be products
+              if (element.querySelector('[data-product-id], .product, .product-card, [class*="product"]') ||
+                  element.matches('[data-product-id], .product, .product-card, [class*="product"]')) {
+                shouldReExtract = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (shouldReExtract) break;
+      }
+      
+      if (shouldReExtract) {
+        console.log('🔄 Detected new product elements, re-extracting...');
+        runExtraction();
+      }
+    });
+    
+    // Start observing the document with the configured parameters
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
+    
+    // Also set up scroll event listener to detect lazy-loaded content
+    let scrollTimeout: number | null = null;
+    window.addEventListener('scroll', () => {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      
+      scrollTimeout = window.setTimeout(() => {
+        console.log('🔄 Scroll detected, checking for new products...');
+        runExtraction();
+      }, 1000) as unknown as number;
+    });
     
     // If immediate extraction failed, try again after delays for dynamic content
     if (!immediateSuccess) {
